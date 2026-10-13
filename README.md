@@ -49,3 +49,7 @@ Pagamentos, cadastro público, recuperação de senha, envio de notificações, 
 ## Verificação
 
 Typecheck, build web, 15 testes de comportamento e 13 verificações SQL passaram. O diagnóstico Expo offline confirmou dependências compatíveis; a checagem online não concluiu por timeout de proxy. Não houve teste de navegador ou dispositivo nesta execução. Veja docs/verification.md para o roteiro pendente.
+
+## GitHub Pages
+
+A publicação pelo Pages está configurada em `.github/workflows/pages.yml`. `npm run build:pages` prepara `/Eleva/`, assets e fallback de rotas internas. Leia docs/github-pages.md para a ativação inicial nas configurações do repositório. O endereço só estará disponível após o workflow publicar com sucesso.

@@ -42,7 +42,8 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "format": "prettier --write app src tests docs *.json *.md",
     "format:check": "prettier --check app src tests docs *.json *.md",
-    "test:sql": "node supabase/tests/run-security.mjs"
+    "test:sql": "node supabase/tests/run-security.mjs",
+    "build:pages": "node scripts/build-pages.mjs"
   },
   "private": true
 }
