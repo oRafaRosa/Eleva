@@ -1,9 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback } from "react";
 import type { StyleProp, ViewStyle } from "react-native";
 import Animated, {
-  cubicBezier,
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
   useReducedMotion,
 } from "react-native-reanimated";
+import { useFocusEffect } from "expo-router";
 
 export function MotionBlock({
   children,
@@ -15,27 +20,27 @@ export function MotionBlock({
   illustration?: boolean;
 }) {
   const reduced = useReducedMotion();
-  const [ready, setReady] = useState(false);
-  useEffect(() => setReady(true), []);
-  return (
-    <Animated.View
-      style={[
-        style,
-        {
-          opacity: ready || reduced ? 1 : 0.7,
-          transform: reduced
-            ? []
-            : [
-                { translateY: ready ? 0 : 6 },
-                { scale: ready ? 1 : illustration ? 0.94 : 1 },
-              ],
-          transitionProperty: ["opacity", "transform"],
-          transitionDuration: reduced ? 0 : illustration ? 420 : 240,
-          transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1),
-        },
-      ]}
-    >
-      {children}
-    </Animated.View>
+  const progress = useSharedValue(reduced ? 1 : 0);
+  useFocusEffect(
+    useCallback(() => {
+      progress.set(reduced ? 1 : 0);
+      progress.set(
+        withTiming(1, {
+          duration: reduced ? 0 : illustration ? 420 : 280,
+          easing: Easing.bezier(0.23, 1, 0.32, 1),
+        }),
+      );
+      return () => cancelAnimation(progress);
+    }, [progress, reduced, illustration]),
   );
+  const animated = useAnimatedStyle(() => ({
+    opacity: reduced ? 1 : 0.65 + progress.get() * 0.35,
+    transform: reduced
+      ? []
+      : [
+          { translateY: (1 - progress.get()) * 7 },
+          { scale: illustration ? 0.96 + progress.get() * 0.04 : 1 },
+        ],
+  }));
+  return <Animated.View style={[style, animated]}>{children}</Animated.View>;
 }

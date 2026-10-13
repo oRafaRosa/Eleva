@@ -11,6 +11,7 @@ import {
   s,
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
+import { MotionBlock } from "../../src/components/MotionBlock";
 export default function Learn() {
   const { publications, loading } = useEleva();
   const [q, setQ] = useState("");
@@ -51,7 +52,11 @@ export default function Learn() {
       {loading ? (
         <Loading />
       ) : visible.length ? (
-        visible.map((p) => <PublicationCard key={p.id} item={p} />)
+        <MotionBlock key={pillar}>
+          {visible.map((p) => (
+            <PublicationCard key={p.id} item={p} />
+          ))}
+        </MotionBlock>
       ) : (
         <Empty text="Não encontramos conteúdo com essa busca. Tente outro assunto." />
       )}

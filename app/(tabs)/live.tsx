@@ -3,6 +3,10 @@ import { router } from "expo-router";
 import { Page, Body, Title, Section, s, Empty } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
 import { colors } from "../../src/theme";
+import {
+  ChallengeProgress,
+  ChallengeStepControl,
+} from "../../src/components/ChallengeProgress";
 export default function Live() {
   const { events, challenges, challengeSteps, stepCompletions, toggleStep } =
     useEleva();
@@ -13,34 +17,31 @@ export default function Live() {
       {!challenges.length && (
         <Empty text="Os próximos desafios vão aparecer aqui." />
       )}
-      {challenges.map((c) => (
-        <View key={c.id} style={[s.panel, { marginBottom: 16 }]}>
-          <Title small>{c.title}</Title>
-          <Body>{c.description}</Body>
-          {challengeSteps
-            .filter((t) => t.challenge_id === c.id)
-            .map((t) => (
-              <Pressable
-                key={t.id}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: stepCompletions.includes(t.id) }}
-                onPress={() => toggleStep(t.id)}
-                style={{
-                  flexDirection: "row",
-                  gap: 12,
-                  paddingVertical: 12,
-                  borderTopWidth: 1,
-                  borderTopColor: colors.line,
-                }}
-              >
-                <Body style={{ color: colors.burgundy }}>
-                  {stepCompletions.includes(t.id) ? "☑" : "□"}
-                </Body>
-                <Body style={{ flex: 1 }}>{t.title}</Body>
-              </Pressable>
-            ))}
-        </View>
-      ))}
+      {challenges.map((c) => {
+        const steps = challengeSteps
+          .filter((step) => step.challenge_id === c.id)
+          .sort((a, b) => a.position - b.position);
+        const completed = steps.filter((step) =>
+          stepCompletions.includes(step.id),
+        ).length;
+        return (
+          <View key={c.id} style={[s.panel, { marginBottom: 16, gap: 8 }]}>
+            <Title small>{c.title}</Title>
+            <Body>{c.description}</Body>
+            <ChallengeProgress completed={completed} total={steps.length} />
+            <View>
+              {steps.map((step) => (
+                <ChallengeStepControl
+                  key={step.id}
+                  title={step.title}
+                  checked={stepCompletions.includes(step.id)}
+                  onToggle={() => toggleStep(step.id)}
+                />
+              ))}
+            </View>
+          </View>
+        );
+      })}
       <Section title="Próximos encontros" />
       {!events.length && <Empty text="Ainda não há encontros publicados." />}
       {events.map((e) => (

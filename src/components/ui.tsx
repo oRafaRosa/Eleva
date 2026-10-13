@@ -185,22 +185,30 @@ export function Chip({
   active?: boolean;
   onPress: () => void;
 }) {
+  const reduced = useReducedMotion();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected: !!active }}
       onPress={onPress}
-      style={[
-        s.chip,
-        active && {
-          backgroundColor: colors.burgundy,
-          borderColor: colors.burgundy,
-        },
-      ]}
     >
-      <Text style={[s.chipText, active && { color: colors.white }]}>
-        {label}
-      </Text>
+      <Animated.View
+        style={[
+          s.chip,
+          active && {
+            backgroundColor: colors.burgundy,
+            borderColor: colors.burgundy,
+          },
+          {
+            transitionProperty: ["backgroundColor", "borderColor"],
+            transitionDuration: reduced ? 0 : 160,
+          },
+        ]}
+      >
+        <Text style={[s.chipText, active && { color: colors.white }]}>
+          {label}
+        </Text>
+      </Animated.View>
     </Pressable>
   );
 }
@@ -393,6 +401,8 @@ export const s = StyleSheet.create({
   },
   fieldLabel: { fontFamily: fonts.medium, color: colors.ink, fontSize: 15 },
   chip: {
+    minHeight: 48,
+    justifyContent: "center",
     borderWidth: 1,
     borderColor: colors.line,
     paddingVertical: 9,

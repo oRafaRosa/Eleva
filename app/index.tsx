@@ -2,13 +2,26 @@ import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
 import { Page, Body, Title, Button, s } from "../src/components/ui";
 import { colors, fonts } from "../src/theme";
-import { useEleva } from "../src/state/AppProvider";
+import { Illustration } from "../src/components/Illustration";
+import { MotionBlock } from "../src/components/MotionBlock";
 export default function Welcome() {
   const wide = useWindowDimensions().width > 640;
   return (
     <Page>
       <View style={[styles.hero, wide && { padding: 48 }]}>
-        <Text style={styles.wordmark}>ELEVA</Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+          }}
+        >
+          <Text style={styles.wordmark}>ELEVA</Text>
+          <MotionBlock illustration>
+            <Illustration kind="flower" size={wide ? 112 : 76} />
+          </MotionBlock>
+        </View>
         <View style={styles.rule} />
         <Title style={styles.headline}>
           Um espaço para{wide ? " " : "\n"}cuidar de você.
