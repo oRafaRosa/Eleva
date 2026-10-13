@@ -18,11 +18,7 @@ export default function Profile() {
     <Page kicker="Seu espaço" title="Meu ELEVA">
       <View style={s.panel}>
         <Title small>{user?.full_name || "Visitante"}</Title>
-        <Body muted>
-          {isDemo
-            ? "Você está explorando uma prévia com dados de exemplo."
-            : "Sua conta na ELEVA"}
-        </Body>
+        <Body muted>Sua conta na ELEVA</Body>
         <Body>
           {completions.length}{" "}
           {completions.length === 1
@@ -55,7 +51,7 @@ export default function Profile() {
       <View style={{ marginTop: 12 }}>
         <Button
           secondary
-          label={isDemo ? "Sair da prévia" : "Sair da conta"}
+          label="Sair da conta"
           onPress={() => {
             void logout().then(() => router.replace("/login"));
           }}

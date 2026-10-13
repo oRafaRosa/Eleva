@@ -58,7 +58,7 @@ const seed: Publication[] = [
     pillar: "body",
     title: "Mobilidade para começar o dia",
     summary: "Uma sequência leve, sem equipamentos, para fazer em casa.",
-    body: "Separe um espaço confortável e faça os movimentos sem pressa.\n\n1. Círculos de ombros: 30 segundos em cada sentido.\n2. Mobilidade de coluna em quatro apoios: 8 repetições.\n3. Rotação de tronco: 6 repetições por lado.\n4. Mobilidade de tornozelos: 8 repetições por lado.\n\nRespeite sua amplitude e interrompa se sentir dor. Esta é uma sequência demonstrativa. Os treinos do clube serão revisados por uma profissional.",
+    body: "Separe um espaço confortável e faça os movimentos sem pressa.\n\n1. Círculos de ombros: 30 segundos em cada sentido.\n2. Mobilidade de coluna em quatro apoios: 8 repetições.\n3. Rotação de tronco: 6 repetições por lado.\n4. Mobilidade de tornozelos: 8 repetições por lado.\n\nRespeite sua amplitude e interrompa se sentir dor.",
     details: {
       duration_minutes: 12,
       level: "Iniciante",
@@ -83,7 +83,7 @@ const seed: Publication[] = [
     title: "Uma rotina que cabe na sua semana",
     summary:
       "Como escolher poucos compromissos e abrir espaço para o que importa.",
-    body: "Comece olhando para a semana como ela é. Considere trabalho, deslocamento, cuidados com a casa e descanso. Depois escolha uma atividade de cuidado que você consegue repetir.\n\nAnote um horário possível e tenha uma alternativa para os dias mais corridos.\n\nConteúdo de demonstração. A aula em vídeo será incluída pela equipe.",
+    body: "Comece olhando para a semana como ela é. Considere trabalho, deslocamento, cuidados com a casa e descanso. Depois escolha uma atividade de cuidado que você consegue repetir.\n\nAnote um horário possível e tenha uma alternativa para os dias mais corridos.",
     details: { duration_minutes: 18 },
   },
   {
@@ -101,8 +101,7 @@ const events: ElevaEvent[] = [
   {
     id: "demo-event",
     title: "Uma manhã com a ELEVA",
-    description:
-      "Movimento, café da manhã e conversa entre as integrantes. Evento ilustrativo, sem inscrições reais.",
+    description: "Movimento, café da manhã e conversa entre as integrantes.",
     location: "São Paulo · endereço a confirmar",
     starts_at: "2026-11-07T12:00:00Z",
     ends_at: "2026-11-07T15:00:00Z",
@@ -167,7 +166,7 @@ export function createDemoRepository(
     account === "admin" ? "rebeca" : account === "member" ? "marina" : account;
   const role = selected === "rebeca" ? "admin" : "member";
   const requireAccount = () => {
-    if (!selected) throw new Error("Escolha uma conta de exemplo para entrar.");
+    if (!selected) throw new Error("Escolha um acesso para entrar.");
     return selected;
   };
   let state: DemoState | undefined;
@@ -189,6 +188,22 @@ export function createDemoRepository(
           activities: {},
         };
     }
+    // Limpa apenas notas antigas dos conteúdos de apresentação, sem reescrever publicações próprias.
+    state!.publications = state!.publications.map((item) => {
+      if (!["demo-training", "demo-lesson"].includes(item.id)) return item;
+      return {
+        ...item,
+        body: item.body
+          .replace(
+            " Esta é uma sequência demonstrativa. Os treinos do clube serão revisados por uma profissional.",
+            "",
+          )
+          .replace(
+            "\n\nConteúdo de demonstração. A aula em vídeo será incluída pela equipe.",
+            "",
+          ),
+      };
+    });
     // O formato antigo guardava uma única atividade, agora atribuída à Marina.
     if (!state!.activities)
       state!.activities = { marina: state!.activity ?? emptyActivity() };

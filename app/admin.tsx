@@ -293,15 +293,6 @@ export default function AdminScreen() {
       >
         <Text style={styles.navText}>Calendário editorial</Text>
       </Pressable>
-      {wide && (
-        <>
-          <View style={styles.navDivider} />
-          <Body muted>Eventos e integrantes</Body>
-          <Body muted style={{ fontSize: 14 }}>
-            Gestão administrativa em uma próxima etapa.
-          </Body>
-        </>
-      )}
       <View style={{ height: 20 }} />
       <Button
         label="Ver plataforma"
@@ -337,14 +328,6 @@ export default function AdminScreen() {
                 onPress={() => router.push("/(tabs)/home")}
               />
             </View>
-          </View>
-        )}
-        {isDemo && (
-          <View style={styles.demo}>
-            <Body>
-              Demonstração do painel. Alterações salvas neste navegador. O
-              agendamento automático depende do servidor.
-            </Body>
           </View>
         )}
         <View style={styles.header}>

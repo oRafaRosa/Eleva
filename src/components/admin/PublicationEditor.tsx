@@ -219,12 +219,6 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={styles.form}
           >
-            {demo && (
-              <Body muted>
-                Conteúdo de demonstração. As alterações ficam neste navegador. O
-                agendamento automático depende do servidor.
-              </Body>
-            )}
             {discard ? (
               <View style={s.panel}>
                 <Title small>Sair sem salvar?</Title>

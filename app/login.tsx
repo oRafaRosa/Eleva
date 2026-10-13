@@ -48,7 +48,7 @@ export default function Login() {
       await enterDemo(account);
       router.replace(account === "rebeca" ? "/admin" : "/(tabs)/home");
     } catch {
-      setError("Não foi possível abrir a conta de exemplo. Tente novamente.");
+      setError("Não foi possível entrar. Tente novamente.");
     } finally {
       setBusy(false);
     }
@@ -82,10 +82,12 @@ export default function Login() {
           />
         </View>
       )}
-      <Title small>Conheça a prévia</Title>
+      <Title small>Escolham um acesso</Title>
       <Body muted style={{ marginTop: 12, marginBottom: 22 }}>
-        Escolha uma conta de exemplo. Não precisa de senha. Os conteúdos são
-        fictícios e as alterações ficam neste navegador ou dispositivo.
+        Preparei essa prévia para vocês conhecerem o app e testarem as telas.
+        Podem entrar como Marina para ver a área das integrantes ou como Rebeca
+        para conhecer o painel de administração. Não precisa de senha. Os
+        conteúdos e as ações são exemplos para esta apresentação.
       </Body>
       <View style={{ gap: 16 }}>
         <View

@@ -10,8 +10,6 @@ export function getRepository(
 ) {
   if (options.demo) return createDemoRepository(options.role);
   if (!supabase)
-    throw new Error(
-      "A conexão da ELEVA ainda não foi configurada. Abra a demonstração para conhecer o aplicativo.",
-    );
+    throw new Error("Não foi possível abrir a plataforma. Tente novamente.");
   return createSupabaseRepository(supabase);
 }

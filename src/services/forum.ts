@@ -116,7 +116,8 @@ export function createForumRepository(options: {
   if (options.demo) return createDemoForum(options.user);
   const client = async () => {
     const { supabase } = await import("./supabase");
-    if (!supabase) throw new Error("A comunidade ainda não está conectada.");
+    if (!supabase)
+      throw new Error("Não foi possível abrir as conversas. Tente novamente.");
     return supabase;
   };
   const uid = async () => {
@@ -185,15 +186,13 @@ export function createForumRepository(options: {
     },
     async report(kind, id) {
       const c = await client();
-      const { error } = await c
-        .from("forum_reports")
-        .upsert(
-          {
-            reporter_id: await uid(),
-            ...(kind === "topic" ? { topic_id: id } : { reply_id: id }),
-          },
-          { ignoreDuplicates: true },
-        );
+      const { error } = await c.from("forum_reports").upsert(
+        {
+          reporter_id: await uid(),
+          ...(kind === "topic" ? { topic_id: id } : { reply_id: id }),
+        },
+        { ignoreDuplicates: true },
+      );
       if (error && error.code !== "23505") throw error;
     },
   };

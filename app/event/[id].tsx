@@ -70,7 +70,7 @@ export default function Event() {
         <Empty
           text={
             isDemo
-              ? "Inscrição de exemplo registrada nesta prévia."
+              ? "Participação marcada na prévia."
               : "Sua inscrição está confirmada."
           }
         />
@@ -80,7 +80,7 @@ export default function Event() {
           registered
             ? "Cancelar inscrição"
             : isDemo
-              ? "Testar inscrição"
+              ? "Quero participar"
               : "Quero participar"
         }
         secondary={registered}
@@ -90,8 +90,7 @@ export default function Event() {
       />
       {isDemo && (
         <Body muted style={{ fontSize: 14, marginTop: 15 }}>
-          Atividade fictícia para demonstrar a inscrição. Nenhuma reserva real
-          será feita.
+          Sugestão de encontro para esta apresentação.
         </Body>
       )}
     </Page>

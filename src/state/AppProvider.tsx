@@ -246,7 +246,7 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     async login(email, password) {
       if (!supabase)
         throw new Error(
-          "O acesso por senha ainda não está disponível. Abra a prévia para conhecer a plataforma.",
+          "Para esta apresentação, escolham um dos acessos abaixo.",
         );
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -284,7 +284,7 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     registerEvent(id) {
       return action(
         () => repository.registerEvent(id),
-        isDemo ? "Inscrição de exemplo registrada." : "Inscrição confirmada.",
+        isDemo ? "Participação marcada na prévia." : "Inscrição confirmada.",
       );
     },
     cancelRegistration(id) {

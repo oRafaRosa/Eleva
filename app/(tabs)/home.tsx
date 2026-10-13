@@ -21,11 +21,7 @@ export default function Home() {
   return (
     <Page
       titleStyle={{ fontFamily: fonts.bold, fontSize: 34, lineHeight: 40 }}
-      kicker={
-        isDemo
-          ? "Prévia da plataforma. Conteúdos e atividades de exemplo."
-          : "Seu espaço na ELEVA"
-      }
+      kicker="Seu espaço na ELEVA"
       title={
         user?.full_name
           ? `Olá, ${user.full_name.split(" ")[0]}.`

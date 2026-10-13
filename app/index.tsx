@@ -51,10 +51,6 @@ export default function Welcome() {
           </View>
         ))}
       </View>
-      <Body muted style={{ fontSize: 13, marginTop: 28 }}>
-        Esta primeira versão apresenta a experiência com conteúdos de exemplo. A
-        programação oficial será publicada pela equipe ELEVA.
-      </Body>
     </Page>
   );
 }

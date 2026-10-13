@@ -114,7 +114,7 @@ export default function Connect() {
               void action(
                 () => forum!.report(kind, item.id),
                 isDemo
-                  ? "Denúncia salva na demonstração. Ela não foi enviada à equipe."
+                  ? "Mensagem sinalizada nesta prévia."
                   : "Denúncia enviada para revisão.",
               )
             }
@@ -151,7 +151,7 @@ export default function Connect() {
     <Page kicker="Comunidade ELEVA" title={topic ? "Conversa" : "Conectar"}>
       <Body muted style={{ marginBottom: 24 }}>
         {isDemo
-          ? "Demonstração: conversas salvas neste navegador. Elas não são compartilhadas com outras integrantes."
+          ? "Podem abrir uma conversa e testar as respostas por aqui."
           : "Um espaço para conversar com as integrantes da ELEVA."}
       </Body>
       <View

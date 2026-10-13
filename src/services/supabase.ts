@@ -27,7 +27,7 @@ if (supabase && Platform.OS !== "web") {
 /** Bucket paths are never public URLs. Call after access is checked by Storage RLS. */
 export async function resolveContentAsset(path: string): Promise<string> {
   if (!supabase)
-    throw new Error("A conexão da ELEVA ainda não foi configurada.");
+    throw new Error("Não foi possível abrir este conteúdo. Tente novamente.");
   const { data, error } = await supabase.storage
     .from("eleva-content")
     .createSignedUrl(path, 60);

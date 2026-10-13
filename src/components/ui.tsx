@@ -18,7 +18,6 @@ import Animated, {
 import { router } from "expo-router";
 import { colors, fonts, typeLabels, pillarLabels } from "../theme";
 import { resolveContentAsset } from "../services/supabase";
-import { useEleva } from "../state/AppProvider";
 import { Publication } from "../types/domain";
 import { Illustration } from "./Illustration";
 import { MotionBlock } from "./MotionBlock";
@@ -111,7 +110,6 @@ export function Page({
   back?: boolean;
   titleStyle?: TextStyle;
 }) {
-  const { isDemo } = useEleva();
   return (
     <ScrollView
       style={s.page}
@@ -127,19 +125,6 @@ export function Page({
         </Pressable>
         <Text style={s.topNote}>Corpo, mente e espírito</Text>
       </View>
-      {isDemo && (
-        <View
-          style={{
-            paddingVertical: 9,
-            borderBottomWidth: 1,
-            borderBottomColor: colors.line,
-          }}
-        >
-          <Body muted style={{ fontSize: 12, lineHeight: 18 }}>
-            Prévia • Conteúdos e atividades fictícios
-          </Body>
-        </View>
-      )}
       {kicker && (
         <Body muted style={{ marginTop: 25 }}>
           {kicker}
