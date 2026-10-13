@@ -1,0 +1,22 @@
+[agents]
+max_threads = 6
+
+[agents.client]
+description = "Implementar telas React Native/Expo mobile e navegação. Usar tokens de DESIGN.md. Garantir estados e acessibilidade, sem dependências DOM em compartilhados."
+config_file = "agents/client.toml"
+
+[agents.editorial]
+description = "Implementar admin, editor e calendário. Aguardar confirmação dos serviços. Validar fuso, data, autorização e saída com alterações pendentes."
+config_file = "agents/editorial.toml"
+
+[agents.backend]
+description = "Implementar Supabase, RLS e agendamento no servidor. Nunca usar metadata editável para conceder admin. Não expor secrets no cliente. Não alterar outros projetos."
+config_file = "agents/backend.toml"
+
+[agents.design]
+description = "Aplicar identidade ELEVA, revisar escrita e motion, produzir referência Figma com tokens. Respeitar o manual e recursos reais."
+config_file = "agents/design.toml"
+
+[agents.reviewer]
+description = "Revisar comportamento, autorização, tipos, acessibilidade e limites. Testes devem verificar contratos e cenários reais. Distinguir demo e produção."
+config_file = "agents/reviewer.toml"

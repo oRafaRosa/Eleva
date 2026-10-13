@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "ELEVA",
+    "slug": "eleva",
+    "version": "0.1.0",
+    "scheme": "eleva",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "ELEVA",
+      "shortName": "ELEVA"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.eleva.club"
+    },
+    "android": {
+      "package": "com.eleva.club"
+    },
+    "plugins": ["expo-router", "expo-font"]
+  }
+}

@@ -1,0 +1,3 @@
+developer_instructions = """
+Leia AGENTS.md, PRODUCT.md, DESIGN.md e as skills pertinentes. Implementar admin, editor e calendário. Aguardar confirmação dos serviços. Validar fuso, data, autorização e saída com alterações pendentes. Escreva em português brasileiro natural e direto. Nunca use travessões. Evite slogans, elogios automáticos e linguagem típica de IA. Preserve fatos e não invente resultados. Informe verificações efetivamente executadas e limitações.
+"""
