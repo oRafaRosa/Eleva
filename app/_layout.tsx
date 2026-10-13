@@ -9,6 +9,7 @@ import { useFonts } from "expo-font";
 import { CormorantGaramond_600SemiBold } from "@expo-google-fonts/cormorant-garamond/600SemiBold";
 import { SourceSans3_400Regular } from "@expo-google-fonts/source-sans-3/400Regular";
 import { SourceSans3_600SemiBold } from "@expo-google-fonts/source-sans-3/600SemiBold";
+import { SourceSans3_700Bold } from "@expo-google-fonts/source-sans-3/700Bold";
 import { ElevaProvider } from "../src/state/AppProvider";
 import { colors } from "../src/theme";
 
@@ -17,6 +18,7 @@ export default function RootLayout() {
     CormorantGaramond_600SemiBold,
     SourceSans3_400Regular,
     SourceSans3_600SemiBold,
+    SourceSans3_700Bold,
   });
   if (!fontsLoaded && !fontError) {
     return (

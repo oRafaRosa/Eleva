@@ -1,7 +1,12 @@
-import { Tabs } from "expo-router";
+import { Tabs, Redirect } from "expo-router";
 import { Text } from "react-native";
+import { useEleva } from "../../src/state/AppProvider";
+import { Loading } from "../../src/components/ui";
 import { colors, fonts } from "../../src/theme";
 export default function TabsLayout() {
+  const { user, sessionReady, loading } = useEleva();
+  if (!sessionReady || (loading && !user)) return <Loading />;
+  if (!user) return <Redirect href="/login" />;
   return (
     <Tabs
       initialRouteName="home"

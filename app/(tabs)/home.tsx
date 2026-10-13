@@ -11,13 +11,16 @@ import {
   Loading,
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
-import { colors } from "../../src/theme";
+import { colors, fonts } from "../../src/theme";
+import { Illustration } from "../../src/components/Illustration";
+import { MotionBlock } from "../../src/components/MotionBlock";
 import { dailyDevotional } from "../../src/utils/editorialDay";
 export default function Home() {
   const { publications, events, user, loading, isDemo, error } = useEleva();
   const devotional = dailyDevotional(publications);
   return (
     <Page
+      titleStyle={{ fontFamily: fonts.bold, fontSize: 34, lineHeight: 40 }}
       kicker={
         isDemo
           ? "Prévia da plataforma. Conteúdos e atividades de exemplo."
@@ -36,7 +39,9 @@ export default function Home() {
       {loading ? (
         <Loading />
       ) : devotional ? (
-        <PublicationCard item={devotional} feature />
+        <MotionBlock>
+          <PublicationCard item={devotional} feature />
+        </MotionBlock>
       ) : (
         <Empty text="O devocional de hoje ainda não foi publicado. Os anteriores estão em Aprender." />
       )}
@@ -59,13 +64,24 @@ export default function Home() {
           onPress={() => router.push(`/event/${e.id}`)}
           style={[s.panel, { backgroundColor: colors.pink }]}
         >
-          <Body style={{ fontSize: 14 }}>
-            {new Date(e.starts_at).toLocaleDateString("pt-BR", {
-              day: "numeric",
-              month: "long",
-              timeZone: "America/Sao_Paulo",
-            })}
-          </Body>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Body style={{ fontSize: 14 }}>
+              {new Date(e.starts_at).toLocaleDateString("pt-BR", {
+                day: "numeric",
+                month: "long",
+                timeZone: "America/Sao_Paulo",
+              })}
+            </Body>
+            <MotionBlock illustration>
+              <Illustration kind="coffee" size={76} />
+            </MotionBlock>
+          </View>
           <Title small>{e.title}</Title>
           <Body>{e.location}</Body>
           <Body style={{ color: colors.burgundy }}>Ver o encontro ↗</Body>

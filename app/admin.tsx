@@ -35,14 +35,7 @@ import type {
 } from "../src/types/domain";
 
 export default function AdminScreen() {
-  const {
-    repository,
-    user,
-    isDemo,
-    enterDemo,
-    refresh,
-    loading: appLoading,
-  } = useEleva();
+  const { repository, user, isDemo, refresh, loading: appLoading } = useEleva();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
   const requestVersion = useRef(0);
@@ -72,6 +65,7 @@ export default function AdminScreen() {
     setItems([]);
     setError("");
     try {
+      if (!user || user.role !== "admin") return;
       const access = await repository.getAccess();
       if (version !== requestVersion.current) return;
       if (!access || access.role !== "admin" || !access.active) return;
@@ -182,13 +176,6 @@ export default function AdminScreen() {
           label="Entrar na minha conta"
           onPress={() => router.push("/login")}
         />
-        {isDemo && (
-          <Button
-            label="Abrir demonstração do admin"
-            secondary
-            onPress={() => enterDemo("admin")}
-          />
-        )}
         <Button
           label="Voltar para a plataforma"
           secondary

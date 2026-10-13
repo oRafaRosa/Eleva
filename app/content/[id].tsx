@@ -1,5 +1,5 @@
 import { View, Linking } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, Redirect } from "expo-router";
 import {
   Page,
   Body,
@@ -14,6 +14,8 @@ import { typeLabels, pillarLabels, colors } from "../../src/theme";
 export default function Content() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
+    user,
+    sessionReady,
     publications,
     favorites,
     completions,
@@ -21,6 +23,13 @@ export default function Content() {
     toggleFavorite,
     toggleCompletion,
   } = useEleva();
+  if (!sessionReady || (loading && !user))
+    return (
+      <Page back>
+        <Loading />
+      </Page>
+    );
+  if (!user) return <Redirect href="/login" />;
   const p = publications.find((p) => p.id === id);
   if (loading && !p)
     return (

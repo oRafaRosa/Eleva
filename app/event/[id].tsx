@@ -1,5 +1,5 @@
 import { View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, Redirect } from "expo-router";
 import {
   Page,
   Body,
@@ -13,6 +13,8 @@ import { useEleva } from "../../src/state/AppProvider";
 export default function Event() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
+    user,
+    sessionReady,
     events,
     registrations,
     registerEvent,
@@ -20,6 +22,13 @@ export default function Event() {
     isDemo,
     loading,
   } = useEleva();
+  if (!sessionReady || (loading && !user))
+    return (
+      <Page back>
+        <Loading />
+      </Page>
+    );
+  if (!user) return <Redirect href="/login" />;
   const e = events.find((e) => e.id === id);
   if (loading && !e)
     return (

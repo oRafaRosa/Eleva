@@ -134,9 +134,24 @@ const steps: ChallengeStep[] = [
   position: index + 1,
   title,
 }));
+export type DemoAccount = "marina" | "rebeca";
+export const DEMO_SESSION_KEY = "eleva:demo-session:v1";
+export async function readDemoSession(
+  storage: DemoStorage = nativeStorage,
+): Promise<DemoAccount | null> {
+  const value = await storage.getItem(DEMO_SESSION_KEY);
+  return value === "marina" || value === "rebeca" ? value : null;
+}
+export async function saveDemoSession(
+  account: DemoAccount | null,
+  storage: DemoStorage = nativeStorage,
+): Promise<void> {
+  await storage.setItem(DEMO_SESSION_KEY, account ?? "");
+}
 interface DemoState {
   publications: Publication[];
-  activity: Activity;
+  activities: Partial<Record<DemoAccount, Activity>>;
+  activity?: Activity;
 }
 const emptyActivity = (): Activity => ({
   favoriteIds: [],
@@ -145,9 +160,16 @@ const emptyActivity = (): Activity => ({
   stepIds: [],
 });
 export function createDemoRepository(
-  role: "member" | "admin" = "member",
+  account: DemoAccount | "member" | "admin" | null = "member",
   storage: DemoStorage = nativeStorage,
 ): ElevaRepository {
+  const selected =
+    account === "admin" ? "rebeca" : account === "member" ? "marina" : account;
+  const role = selected === "rebeca" ? "admin" : "member";
+  const requireAccount = () => {
+    if (!selected) throw new Error("Escolha uma conta de exemplo para entrar.");
+    return selected;
+  };
   let state: DemoState | undefined;
   const load = async () => {
     {
@@ -157,29 +179,42 @@ export function createDemoRepository(
       } catch {
         state = undefined;
       }
-      if (!state || !Array.isArray(state.publications) || !state.activity)
+      if (
+        !state ||
+        !Array.isArray(state.publications) ||
+        (!state.activities && !state.activity)
+      )
         state = {
           publications: JSON.parse(JSON.stringify(seed)),
-          activity: emptyActivity(),
+          activities: {},
         };
     }
+    // O formato antigo guardava uma única atividade, agora atribuída à Marina.
+    if (!state!.activities)
+      state!.activities = { marina: state!.activity ?? emptyActivity() };
+    delete state!.activity;
+    if (selected && !state!.activities[selected])
+      state!.activities[selected] = emptyActivity();
     return state!;
   };
   const persist = async () => {
     await storage.setItem(STORAGE_KEY, JSON.stringify(state));
   };
   const admin = () => {
+    requireAccount();
     if (role !== "admin")
       throw new Error("Esta ação é exclusiva da administração.");
   };
   const toggle = async (key: keyof Activity, id: string, enabled: boolean) => {
     const s = await load();
-    s.activity[key] = s.activity[key].filter((x) => x !== id);
-    if (enabled) s.activity[key].push(id);
+    const activity = s.activities[requireAccount()]!;
+    activity[key] = activity[key].filter((x) => x !== id);
+    if (enabled) activity[key].push(id);
     await persist();
   };
   return {
     async listPublications() {
+      requireAccount();
       return (await load()).publications
         .filter((p) => role === "admin" || p.status === "published")
         .map((p) => ({ ...p }));
@@ -238,16 +273,21 @@ export function createDemoRepository(
       }
     },
     async listEvents() {
+      requireAccount();
       return events;
     },
     async listChallenges() {
+      requireAccount();
       return challenges;
     },
     async listChallengeSteps(id) {
+      requireAccount();
       return steps.filter((x) => x.challenge_id === id);
     },
     async getActivity() {
-      return JSON.parse(JSON.stringify((await load()).activity));
+      return JSON.parse(
+        JSON.stringify((await load()).activities[requireAccount()]),
+      );
     },
     setFavorite: (id, value) => toggle("favoriteIds", id, value),
     setCompletion: (id, value) => toggle("completionIds", id, value),
@@ -255,15 +295,16 @@ export function createDemoRepository(
     cancelRegistration: (id) => toggle("eventIds", id, false),
     setChallengeStep: (id, value) => toggle("stepIds", id, value),
     async getProfile() {
-      return {
-        id: "demo-user",
-        full_name:
-          role === "admin" ? "Administradora de demonstração" : "Marina",
-        avatar_path: null,
-      };
+      return selected
+        ? {
+            id: `demo-${selected}`,
+            full_name: selected === "rebeca" ? "Rebeca" : "Marina",
+            avatar_path: null,
+          }
+        : null;
     },
     async getAccess() {
-      return { role, active: true };
+      return selected ? { role, active: true } : null;
     },
   };
 }

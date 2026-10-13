@@ -12,15 +12,8 @@ import {
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
 export default function Profile() {
-  const {
-    user,
-    isDemo,
-    favorites,
-    completions,
-    publications,
-    logout,
-    enterDemo,
-  } = useEleva();
+  const { user, isDemo, favorites, completions, publications, logout } =
+    useEleva();
   return (
     <Page kicker="Seu espaço" title="Meu ELEVA">
       <View style={s.panel}>
@@ -53,19 +46,7 @@ export default function Profile() {
         <Empty text="Use “Salvar” em um conteúdo para encontrá-lo aqui." />
       )}
       <Section title="Conta" />
-      {isDemo && (
-        <View style={{ marginBottom: 12 }}>
-          <Button
-            secondary
-            label="Conhecer o painel administrativo"
-            onPress={() => {
-              enterDemo("admin");
-              router.push("/admin");
-            }}
-          />
-        </View>
-      )}
-      {user?.role === "admin" && !isDemo && (
+      {user?.role === "admin" && (
         <Button
           label="Abrir painel administrativo"
           onPress={() => router.push("/admin")}
@@ -76,8 +57,7 @@ export default function Profile() {
           secondary
           label={isDemo ? "Sair da prévia" : "Sair da conta"}
           onPress={() => {
-            void logout();
-            router.replace("/");
+            void logout().then(() => router.replace("/login"));
           }}
         />
       </View>

@@ -15,6 +15,12 @@ import type {
   Challenge,
   ChallengeStep,
 } from "../types/domain";
+import {
+  createDemoRepository,
+  readDemoSession,
+  saveDemoSession,
+  type DemoAccount,
+} from "../services/demoRepository";
 import { colors, fonts } from "../theme";
 type User = { id: string; full_name: string; role: "member" | "admin" };
 interface Context {
@@ -33,7 +39,8 @@ interface Context {
   error: string;
   notice: string;
   refresh: () => Promise<void>;
-  enterDemo: (role?: "member" | "admin") => void;
+  enterDemo: (account: DemoAccount) => Promise<void>;
+  sessionReady: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
@@ -45,10 +52,11 @@ interface Context {
 const ElevaContext = createContext<Context | null>(null);
 export function ElevaProvider({ children }: { children: React.ReactNode }) {
   const [isDemo, setDemo] = useState(!isBackendConfigured);
-  const [demoRole, setDemoRole] = useState<"member" | "admin">("member");
+  const [demoAccount, setDemoAccount] = useState<DemoAccount | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
   const repository = useMemo(
-    () => getRepository(isDemo ? { demo: true, role: demoRole } : undefined),
-    [isDemo, demoRole],
+    () => (isDemo ? createDemoRepository(demoAccount) : getRepository()),
+    [isDemo, demoAccount],
   );
   const [publications, setPublications] = useState<Publication[]>([]);
   const [events, setEvents] = useState<ElevaEvent[]>([]);
@@ -79,6 +87,11 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     const version = ++refreshVersion.current;
     setLoading(true);
     setError("");
+    if (isDemo && !demoAccount) {
+      clearPrivate();
+      setLoading(false);
+      return;
+    }
     try {
       const [p, e, c, profile, access] = await Promise.all([
         repository.listPublications(),
@@ -134,12 +147,31 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     }
   }
   useEffect(() => {
+    let alive = true;
+    readDemoSession()
+      .then((account) => {
+        if (!alive) return;
+        if (account) {
+          setDemoAccount(account);
+          setDemo(true);
+        }
+        setSessionReady(true);
+      })
+      .catch(() => {
+        if (alive) setSessionReady(true);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (!sessionReady) return;
     clearPrivate();
     void refresh();
     return () => {
       refreshVersion.current++;
     };
-  }, [repository]);
+  }, [repository, sessionReady]);
   useEffect(() => {
     if (!supabase || isDemo) return;
     let alive = true;
@@ -162,6 +194,10 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, [notice]);
   async function action(work: () => Promise<void>, message: string) {
+    if (!user) {
+      setNotice("Entre na sua conta para continuar.");
+      return;
+    }
     if (actionPending.current) return;
     actionPending.current = true;
     try {
@@ -194,13 +230,16 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     error,
     notice,
     refresh,
-    enterDemo(role = "member") {
-      if (isDemo && demoRole === role) {
-        void refresh();
+    sessionReady,
+    async enterDemo(account) {
+      await saveDemoSession(account);
+      refreshVersion.current++;
+      clearPrivate();
+      setLoading(true);
+      if (isDemo && demoAccount === account) {
+        await refresh();
       } else {
-        refreshVersion.current++;
-        clearPrivate();
-        setDemoRole(role);
+        setDemoAccount(account);
         setDemo(true);
       }
     },
@@ -215,13 +254,18 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
       });
       if (error)
         throw new Error("Confira o e-mail e a senha e tente novamente.");
+      await saveDemoSession(null);
+      setDemoAccount(null);
       setDemo(false);
     },
     async logout() {
       if (!isDemo && supabase) await supabase.auth.signOut();
       refreshVersion.current++;
       clearPrivate();
-      setDemoRole("member");
+      await saveDemoSession(null);
+      setDemoAccount(null);
+      setNotice("");
+      setLoading(false);
     },
     toggleFavorite(id) {
       return action(

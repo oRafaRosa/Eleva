@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Image,
   ViewStyle,
+  TextStyle,
 } from "react-native";
 import Animated, {
   useReducedMotion,
@@ -19,6 +20,8 @@ import { colors, fonts, typeLabels, pillarLabels } from "../theme";
 import { resolveContentAsset } from "../services/supabase";
 import { useEleva } from "../state/AppProvider";
 import { Publication } from "../types/domain";
+import { Illustration } from "./Illustration";
+import { MotionBlock } from "./MotionBlock";
 export function Body({
   children,
   muted = false,
@@ -100,11 +103,13 @@ export function Page({
   title,
   kicker,
   back = false,
+  titleStyle,
 }: {
   children: React.ReactNode;
   title?: string;
   kicker?: string;
   back?: boolean;
+  titleStyle?: TextStyle;
 }) {
   const { isDemo } = useEleva();
   return (
@@ -141,7 +146,9 @@ export function Page({
         </Body>
       )}
       {title && (
-        <Title style={{ marginTop: 8, marginBottom: 24 }}>{title}</Title>
+        <Title style={[{ marginTop: 8, marginBottom: 24 }, titleStyle]}>
+          {title}
+        </Title>
       )}
       {children}
       <View style={{ height: 36 }} />
@@ -251,41 +258,85 @@ export function PublicationCard({
   item: Publication;
   feature?: boolean;
 }) {
+  const [pressed, setPressed] = useState(false);
+  const reduced = useReducedMotion();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Abrir ${item.title}`}
       onPress={() => router.push(`/content/${item.id}`)}
-      style={[s.article, feature && s.feature]}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
     >
-      {item.cover_path && <ContentCover path={item.cover_path} />}
-      <Body
-        style={{ fontSize: 13, color: feature ? colors.pink : colors.muted }}
-      >
-        {typeLabels[item.type]} / {pillarLabels[item.pillar]}
-      </Body>
-      <Title
-        small
+      <Animated.View
         style={[
-          { marginTop: 9, marginBottom: 10 },
-          feature && { color: colors.ivory, fontSize: 37, lineHeight: 39 },
+          s.article,
+          feature && s.feature,
+          {
+            transform: [{ scale: pressed && !reduced ? 0.985 : 1 }],
+            transitionProperty: ["transform"],
+            transitionDuration: reduced ? 0 : 140,
+            transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1),
+          },
         ]}
       >
-        {item.title}
-      </Title>
-      <Body style={feature ? { color: "#EDDBE0" } : undefined}>
-        {item.summary}
-      </Body>
-      <Text
-        style={[s.link, { marginTop: 20 }, feature && { color: colors.pink }]}
-      >
-        {item.type === "devotional"
-          ? "Ler devocional"
-          : item.type === "training"
-            ? "Ver treino"
-            : "Abrir conteúdo"}{" "}
-        ↗
-      </Text>
+        {item.cover_path && <ContentCover path={item.cover_path} />}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+          }}
+        >
+          <Body
+            style={{
+              fontSize: 13,
+              color: feature ? colors.pink : colors.muted,
+            }}
+          >
+            {typeLabels[item.type]} / {pillarLabels[item.pillar]}
+          </Body>
+          {!item.cover_path &&
+            ["devotional", "training", "motivation"].includes(item.type) && (
+              <MotionBlock illustration>
+                <Illustration
+                  size={feature ? 92 : 65}
+                  light={feature}
+                  kind={
+                    item.type === "devotional"
+                      ? "book"
+                      : item.type === "training"
+                        ? "movement"
+                        : "flower"
+                  }
+                />
+              </MotionBlock>
+            )}
+        </View>
+        <Title
+          small
+          style={[
+            { marginTop: 9, marginBottom: 10 },
+            feature && { color: colors.ivory, fontSize: 37, lineHeight: 39 },
+          ]}
+        >
+          {item.title}
+        </Title>
+        <Body style={feature ? { color: "#EDDBE0" } : undefined}>
+          {item.summary}
+        </Body>
+        <Text
+          style={[s.link, { marginTop: 20 }, feature && { color: colors.pink }]}
+        >
+          {item.type === "devotional"
+            ? "Ler devocional"
+            : item.type === "training"
+              ? "Ver treino"
+              : "Abrir conteúdo"}{" "}
+          ↗
+        </Text>
+      </Animated.View>
     </Pressable>
   );
 }

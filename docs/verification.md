@@ -37,3 +37,7 @@ A plataforma está pronta para revisão somente quando os resultados registrados
 ## Verificação final
 
 Typecheck e exportação Expo Web concluídos. A suíte final tem 15 testes aprovados, incluindo a seleção do devocional pelo dia de São Paulo. O runner reproduzível `npm run test:sql` passou com 13 verificações SQL no PGlite. O cron remoto e as integrações reais continuam pendentes. `EXPO_OFFLINE=1 npx expo install --check` confirmou dependências compatíveis com o SDK; a checagem online falhou por timeout do proxy.
+
+## Revisão de acessos e comunidade
+
+A revisão adicionou Marina e Rebeca, sessão persistente e atividade individual por conta. O fórum foi verificado com autoria, respostas, remoção e denúncias, incluindo teste SQL das permissões. A suíte passou com 24 testes; as 13 verificações SQL da base também passaram. O build Pages foi gerado com SVGs e a fonte Bold. Motion respeita redução de movimento; sua aparência ainda precisa de revisão em dispositivos.

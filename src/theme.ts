@@ -13,6 +13,7 @@ export const fonts = {
   serif: "CormorantGaramond_600SemiBold",
   sans: "SourceSans3_400Regular",
   medium: "SourceSans3_600SemiBold",
+  bold: "SourceSans3_700Bold",
 };
 export const typeLabels: Record<string, string> = {
   devotional: "Devocional",

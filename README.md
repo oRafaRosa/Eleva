@@ -19,7 +19,7 @@ npm ci
 npm run web
 ```
 
-Na página inicial, escolha Conhecer a plataforma. No Meu ELEVA, escolha Conhecer o painel administrativo. A rota /admin também permite abrir a demonstração do admin.
+Na página inicial, escolha Conhecer a plataforma. No login, escolha Marina para explorar a área da integrante ou Rebeca para entrar no painel administrativo. As duas contas de exemplo não exigem senha.
 
 ```bash
 npm run typecheck
@@ -44,12 +44,18 @@ DESIGN.md registra tokens, composição, escrita e motion. PRODUCT.md delimita a
 
 vercel.json está preparado para a versão web. A conexão atual retornou 403 ao criar o projeto; não há preview remoto. Leia docs/deployment.md para importar o repositório no Vercel. eas.json prepara perfis de builds nativos, ainda não executados.
 
-Pagamentos, cadastro público, recuperação de senha, envio de notificações, upload de mídia pelo editor, player integrado, comunidade interna e publicação nas lojas ficam para etapas seguintes. Link de mídia HTTPS abre externamente nesta versão.
+Pagamentos, cadastro público, recuperação de senha, envio de notificações, upload de mídia pelo editor, player integrado e publicação nas lojas ficam para etapas seguintes. Link de mídia HTTPS abre externamente nesta versão.
 
 ## Verificação
 
-Typecheck, build web, 15 testes de comportamento e 13 verificações SQL passaram. O diagnóstico Expo offline confirmou dependências compatíveis; a checagem online não concluiu por timeout de proxy. Não houve teste de navegador ou dispositivo nesta execução. Veja docs/verification.md para o roteiro pendente.
+Typecheck, build web, 24 testes de comportamento e 13 verificações SQL passaram. O diagnóstico Expo offline confirmou dependências compatíveis; a checagem online não concluiu por timeout de proxy. Não houve teste de navegador ou dispositivo nesta execução. Veja docs/verification.md para o roteiro pendente.
 
 ## GitHub Pages
 
 A publicação pelo Pages está configurada em `.github/workflows/pages.yml`. `npm run build:pages` prepara `/Eleva/`, assets e fallback de rotas internas. Leia docs/github-pages.md para a ativação inicial nas configurações do repositório. O endereço só estará disponível após o workflow publicar com sucesso.
+
+## Comunidade e contas de exemplo
+
+A aba Conectar permite criar conversas, responder, denunciar e remover mensagens próprias. Rebeca pode moderar. Na demonstração, as conversas ficam no mesmo navegador; alternar contas permite testar as duas identidades. Compartilhamento entre dispositivos exige aplicar a migração do fórum no Supabase configurado. Marina e Rebeca têm favoritos, progresso e inscrições próprios.
+
+As ilustrações leves são vetores do próprio app. Motion usa Reanimated, com entrada discreta, feedback de toque e respeito à redução de movimento. A saudação da página inicial usa Source Sans 3 Bold.

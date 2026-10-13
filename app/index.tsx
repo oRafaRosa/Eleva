@@ -4,7 +4,6 @@ import { Page, Body, Title, Button, s } from "../src/components/ui";
 import { colors, fonts } from "../src/theme";
 import { useEleva } from "../src/state/AppProvider";
 export default function Welcome() {
-  const { enterDemo } = useEleva();
   const wide = useWindowDimensions().width > 640;
   return (
     <Page>
@@ -22,8 +21,7 @@ export default function Welcome() {
           <Button
             label="Conhecer a plataforma"
             onPress={() => {
-              enterDemo();
-              router.push("/(tabs)/home");
+              router.push("/login");
             }}
           />
           <Button
