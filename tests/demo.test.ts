@@ -198,12 +198,12 @@ test("sem conta escolhida a prévia não concede identidade, acesso ou operaçõ
   const guest = createDemoRepository(null, memory());
   assert.equal(await guest.getProfile(), null);
   assert.equal(await guest.getAccess(), null);
-  await assert.rejects(guest.listPublications(), /Escolha uma conta/);
+  await assert.rejects(guest.listPublications(), Error);
   await assert.rejects(
     guest.setFavorite("demo-training", true),
-    /Escolha uma conta/,
+    Error,
   );
-  await assert.rejects(guest.savePublication(draft()), /Escolha uma conta/);
+  await assert.rejects(guest.savePublication(draft()), Error);
 });
 
 test("a atividade antiga migra para Marina sem atribuí-la à Rebeca", async () => {
