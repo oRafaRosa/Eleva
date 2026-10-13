@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "installation_scope": "project",
+  "scripts_executed": false,
+  "skills": [
+    {
+      "name": "humanizar",
+      "repository": "fabricioctelles/skills",
+      "commit": "242512d983b347098eb44692ba74ddd43d7ce4cc",
+      "upstream_path": "skills/humanizar",
+      "path": ".agents/skills/humanizar",
+      "upstream_file_date": "11/10/2026",
+      "installed_at": "2026-10-13",
+      "files_sha256": {
+        "LICENSE": "aa41faffcf88908b495d7d318e96e889ff78aa53138e51e48c4ef4e6da076ad8",
+        "SKILL.md": "5f3a9dc7e009382e4a3b78e49153d9bedb7922a7b35f4ae5e304a030a4a6609e",
+        "references/jev-integration.md": "5936ec9b3d69b2226059df9a3029aaf5cef314424ddfcfe48cf70feaf64691ca",
+        "references/material-autoral.md": "f351a87991333e633fc99941926cff0bdf2b8c3a43cae121233242104b992b79",
+        "references/padroes-composicao.md": "fc36b5f2e0fc109a46a4032580cdd1e7d1666079eece5c9651aef42d7e319515",
+        "references/padroes-consumo-rapido.md": "909acdffccac5b25e15a2960322636bdbadade4249cae71754b6b3a814783157",
+        "references/padroes-conteudo.md": "76f595a6e5f4922a204fdd520b066eed474c9e120450cef9fcc18fa916e90429",
+        "references/padroes-estilo.md": "11af3cd5bc8a1b159eee8ac6d2660e09ffffa57422ab25ffe3b181c6ed8baad8",
+        "references/padroes-exclusivos-pt-br.md": "492963f6f2d69fb7add88f644558d6a57d82e6e70a2730c2b623e9f6ecff912c",
+        "references/padroes-linguagem.md": "f4d1da0c4856a3c2580ced3523905a1c4b9cfcf5d85c8588c770c69acc21e431",
+        "references/padroes-portugues-simplificado.md": "d4f8ea639f501504d066fdcfb8dc38cd0a400f416c50aaf20756a407d19ee4ce",
+        "references/padroes-tom.md": "c00e09e718aaaac55c6f5d563096fbcea1ade38212d4496fed0a8f5f098501f6",
+        "scripts/jev_questions.json": "405490172fd821b31c39db086d5a403e9656d3964d7137584100c9db2c553577"
+      }
+    },
+    {
+      "name": "humanizador-pt",
+      "repository": "opaulomarcondes/humanizador-pt",
+      "commit": "26b89dfc5c28d62a3159efe61bae06b50fdeccd7",
+      "upstream_path": ".",
+      "path": ".agents/skills/humanizador-pt",
+      "upstream_file_date": "19/04/2026",
+      "installed_at": "2026-10-13",
+      "files_sha256": {
+        "LICENSE": "1e3961c32da7e6dd67c3c38053956043a5ea670c0bb82e5ff449c96360c66eb9",
+        "SKILL.md": "4789864eeaccedd961eac0eeed3af9e92d550b1b0bb32db434415873da882c88",
+        "contexts/CONTEXT-TEMPLATE.md": "cecd0d1c0d1c226a1b8f583e0526f10ab74644de7d91b11782851e469b6727a9"
+      }
+    },
+    {
+      "name": "frontend-design",
+      "repository": "anthropics/skills",
+      "commit": "41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f",
+      "upstream_path": "skills/frontend-design",
+      "path": ".agents/skills/frontend-design",
+      "upstream_file_date": "03/09/2026",
+      "installed_at": "2026-10-13",
+      "files_sha256": {
+        "LICENSE.txt": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+        "SKILL.md": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3"
+      }
+    },
+    {
+      "name": "impeccable",
+      "repository": "pbakaus/impeccable",
+      "commit": "d631a8827f99414d2b6daba4ef08b7f8701751d7",
+      "upstream_path": "plugin/skills/impeccable",
+      "path": ".agents/skills/impeccable",
+      "upstream_file_date": "09/10/2026",
+      "installed_at": "2026-10-13",
+      "files_sha256": {
+        "LICENSE": "02bb8c3b4e70190e3986c0404ad2fd8d639b4f534252d82379cc1b502b6d1812",
+        "SKILL.md": "3984708c4fec7cf5227e405c9f7086e681949b9bef009569f101fa60b660a40d",
+        "reference/adapt.md": "0648e4e06d01cabc91fa7dc19256ceedeeeea213b9265e9d36b0918370e16fb2",
+        "reference/adapt.native.md": "17c583cf8ad41266ea1e787b666b9d91fe13469d3d0f6af57c08e0146f9b17ac",
+        "reference/android.md": "058f81f256134841875fd3183e06b37a023de0c877fd2b9eecd97011640791fe",
+        "reference/animate.md": "94b4ce6299fea93d9f256b2d25705961a76bc5ea940c56db4145686ebc99df1b",
+        "reference/audit.md": "b7c98bde47e00889c235e3d808b596224aad5a0869f25e439f135ce86551a075",
+        "reference/audit.native.md": "fe91fcf28638f95577af481a50edaf339d6c9a3ad3b9fa477bc81c116b8bc392",
+        "reference/bolder.md": "4879f38b23d0a251a63cbb0327e660296194cd2e71eb4da3236c6ebfe5807746",
+        "reference/clarify.md": "6c382f8283756e8a693d832b750f7e4cbff1ca5bdcc3825b2b4ef4da9f21876a",
+        "reference/colorize.md": "d1fbd55074abb2251bdaa03749d34acc42c38e46e47549f18f5848df57d43c42",
+        "reference/component-review.md": "7780461422046ea2d7ae8b62558cbcb2a32a3c8160af8f1cb16f3c434abc00bc",
+        "reference/craft-floor.md": "96e2e6bd4fcf9a2c6da65fb029f96d9176308fae2efd9d8653d3b8d838960e07",
+        "reference/craft.md": "9205e222bc6565b37fb504ceec93233c2d2a456802b69d16e6b1c44723907c4c",
+        "reference/critique.md": "8bf1b06547f571d9b8d3875426fff6621fadd3bc08ae9ebb16d749f5c5f44b01",
+        "reference/degraded/asset-producer.md": "37c023b8bbb99221516d3c73f1f1b1be7da3a6dd75c1376799e940b5e6d55223",
+        "reference/degraded/documenter.md": "bcc05ea92faebb5c74037a9d4263a5ce9a56f5ab07c8ab3c59ee704d8cade745",
+        "reference/degraded/finish-reviewer.md": "275dd1b6e63bbd30d2713227c4f79b880a8bc4e01cc48d392068bb86939d3afa",
+        "reference/degraded/manual-edit-applier.md": "5fae7f8a2fc3ddd49ad0a413446dc44daedef5b6b7de5eb935bd2fbfad646d58",
+        "reference/delight.md": "56500b1f9d2fcec8324d7f448d813048b5831a46d3feeb1055bd3eb17ec3660f",
+        "reference/distill.md": "b2f60e0154bf0e687badc46d8c8420e2118a9a6e21162050722be779dc02cb6d",
+        "reference/doctor.md": "5eb790f0e7af38b9a5ec9c037ad51beac42f6cadb2e5949e9492011c833713dd",
+        "reference/document.md": "87b3db688c7963898bda8096f7868fed05ec5a0a80d14298e8b906b70cdf9c42",
+        "reference/extract.md": "bfc51972fbf387566dc9e29c8b1af479a66ab401fdbce659fae9e6a5a9d85316",
+        "reference/generate.md": "abb8829a629420e6de63690dfbb4a074a01c3de8a3d4934f2bea4bca95dcda5f",
+        "reference/harden.md": "3898bd9b56a042e860a0db4fb4dd81ac81126fa218b604702e2ac0c2287ae09b",
+        "reference/hooks.md": "15da1c42d4d208e5f9e9ef24c3326bf8626794de57e7291276d8a5d428f50f54",
+        "reference/init.md": "dc340befdfb87d1de3b70e860fab0be7e951a60d3ddc529072c39eb136cfcfcd",
+        "reference/ios.md": "40c87038b5f75147a5952a96237acf312a327bf70c1bcd8e0a5f064625ae9668",
+        "reference/layout.md": "1d6d2658482b7e2df0c4d27b1b29c5195f0803b402278b96590598f4d3e57aa7",
+        "reference/live-setup.md": "73058cdbe80f7387a8b063db4e2376d0d7276ddaff6bd5e14d3473aecb640465",
+        "reference/live.md": "82a16d267d0b39ff381a65e3093d372fbbc845484f2c831583bef0447aaaad51",
+        "reference/mode-operate.md": "7a52dd7a94ee75f6ae89542c86a1b6e1d306812b16e0d9dbf12d4acad44d148b",
+        "reference/mode-persuade.md": "21e78c8a77badb3f83290cd4577ed3b24bd4dd3b57136d7da75733d4f3ee9ac0",
+        "reference/mode-read.md": "a569989e6a3d6453b4c45e9474e162a15cc54e11732ac6baa7990a6e7cccc0b5",
+        "reference/new-work.md": "7b7cc975a9a62134b6b98dad90930e7139382f51dee2f2960e41bef83be05909",
+        "reference/onboard.md": "9a2c08ee2516d2ee87129e7ebe6a0895f9990c9852d1f6fa7e70be9a6a88a659",
+        "reference/operate.md": "a9d2203acd45ca33a13d5c68b02b23ed512425ac15f0e8438318ed124b43729d",
+        "reference/optimize.md": "6d368b679a0ed1815812815de65863b5840d419589dfbda06224c01149240287",
+        "reference/overdrive.md": "a9856cb40da6519b1334bcfc75a4fbe83bef39ca86ee6f3effcb2a96794c627c",
+        "reference/polish.md": "73893e18e874e14beccd7fca92335d9036f5a5e068fd8815fd7daceadf186a43",
+        "reference/quieter.md": "ee6d6d127c1c2ab3526d529a8e3698be2185b5e346ac617f37501de2c0698b97",
+        "reference/region-map.md": "5c0d1dca9ab72c3ae4a0ea728d6acecf8af980a5b7defa1c7a3924992b62f69a",
+        "reference/routing.md": "dd6c5877467a30cb328789297bb5250b21c1c673d25c570a990043aa07ed01ac",
+        "reference/shape.md": "a55f016c046cb6a27c55bd7f346375aeb506a755c4fbca19a5f92dbd42309c23",
+        "reference/typeset.md": "da98692848aa2e9ea22c681522a082f2226cb5dbfdb704ac38903be1b4cffafd",
+        "reference/visualize.md": "0aaba948fce6d622072e3df922c3c2df9525cd45ccbe6e31f1df9e5ccb14841a",
+        "scripts/VERSION": "9940d4b5219de8404015bc18af844c88d7e9e9105682a5d47b1d369d027dbd25",
+        "scripts/command-metadata.json": "e8720f3aa41135211cc58cc299a39eeda86c75651f4279cc1ede8db10dcc0584",
+        "scripts/data/font-index-failures.json": "835f19a0a3812f3652dd6979a2ce5597f654fd01f26e1b420b92d5f42b997ce4",
+        "scripts/data/font-index.json": "47edbdfaf27073c47033d1ac7dfee881be49e2dcbda7671d1157300481dde6da",
+        "scripts/impeccable": "39d9600489073e227e4f4d55c451ce4252a6632ed7ae37923efbbcbc91f16d07",
+        "scripts/impeccable.cmd": "69cad1ae7355825ef320ac9638a1c9675ba9fda01c9a0fa12244cc4a1973e550",
+        "scripts/live-browser-dom.js": "24f09f2597b9b55a1e2c4acd2ae5c95db5c8615cfc20aa07d1a3950538ad5c4a",
+        "scripts/live-browser-ignores.js": "c1cb6877ca99a0c1b38ba0c7d59f32702d3022f6821d8045f7133f7c40b6362f",
+        "scripts/live-browser-session.js": "42831c3cd874346d8e7f120808d91e6ed3cda5c3eca6eefd76b126659536bc87",
+        "scripts/live-browser.js": "d7f1ee3fdfc423e90268e9c666dce61b2180b62431dbb6ecfc48bca65398a1f8",
+        "scripts/modern-screenshot.umd.js": "bb36665889124a0b6e15f16045265737449c3bdcf2712cdb08af3cfa01563e2b"
+      }
+    },
+    {
+      "name": "expo-animation",
+      "repository": "expo/skills",
+      "commit": "13ad8e05874195633b5c185f6947bb6400e228fc",
+      "upstream_path": "plugins/expo/skills/expo-animation",
+      "path": ".agents/skills/expo-animation",
+      "upstream_file_date": "02/10/2026",
+      "installed_at": "2026-10-13",
+      "files_sha256": {
+        "LICENSE": "4ff5bdb7887ec1435c9cab0e8d1a7caee704d894d65c2a008ccc68b1cc2f260b",
+        "RECIPES.md": "4db141cb346d49231c94a95aaa50844b85a71c47ec543e9f9f5a1f453abc9883",
+        "SKILL.md": "915279236d5ff74ad1ca6004d13917ba9792853c28e5e10cfec4e0884bcc3ebf",
+        "agents/openai.yaml": "7667e1a159300ee640ffb6ed4f81281dfdc0e3a789d4f3e5179c32ab3565795a"
+      }
+    },
+    {
+      "name": "animate-expo",
+      "repository": "emilkowalski/skills",
+      "commit": "85e8e2363b713506e1d5b6e07a0eb2da66be1bc3",
+      "upstream_path": "skills/animate-expo",
+      "path": ".agents/skills/animate-expo",
+      "upstream_file_date": "15/09/2026",
+      "installed_at": "2026-10-13",
+      "files_sha256": {
+        "LICENSE": "4ff5bdb7887ec1435c9cab0e8d1a7caee704d894d65c2a008ccc68b1cc2f260b",
+        "RECIPES.md": "1193cb71334da2e2341778dd92bec9ac79d989cb07fd55d661f324ed5871e718",
+        "SKILL.md": "9a01a91701e6563c67677dde6b66ab30f066a5341d42c21a90ba51d99679274a"
+      }
+    },
+    {
+      "name": "animate",
+      "repository": "emilkowalski/skills",
+      "commit": "85e8e2363b713506e1d5b6e07a0eb2da66be1bc3",
+      "upstream_path": "skills/animate",
+      "path": ".agents/skills/animate",
+      "upstream_file_date": "15/09/2026",
+      "installed_at": "2026-10-13",
+      "files_sha256": {
+        "LICENSE": "4ff5bdb7887ec1435c9cab0e8d1a7caee704d894d65c2a008ccc68b1cc2f260b",
+        "RECIPES.md": "21ff63d84391db8d96ecdf9170095f55a42c836ccc36fd3269c4772bab031ba2",
+        "SKILL.md": "b8ede161270458e6ae2e45e8a1985373515d4c63de5568ddb0f9012d7634356c"
+      }
+    },
+    {
+      "name": "framer-motion",
+      "repository": "Schoepplake/framer-motion-skill",
+      "commit": "1d984d5db13b3fe30edef3f3a5d88dba588a10b7",
+      "upstream_path": "skills/framer-motion",
+      "path": ".agents/skills/framer-motion",
+      "upstream_file_date": "20/03/2026",
+      "installed_at": "2026-10-13",
+      "files_sha256": {
+        "SKILL.md": "b0f4bc839162298fb105e875eceb29f35813e502f8261e4a786dbdef841edc6d",
+        "UPSTREAM-LICENSE.md": "badc8316ad6e34a7b8fd8f5329d4b0e7ae7c32b76231abaab20336ad85e7e007"
+      }
+    }
+  ]
+}
