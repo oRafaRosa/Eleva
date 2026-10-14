@@ -1,6 +1,6 @@
 # Skills instaladas
 
-As oito skills pesquisadas no manual estão em `.agents/skills/`, disponíveis no próprio repositório. A instalação é local ao projeto, com versões fixadas nos commits consultados em 13/10/2026. Não altera as skills pessoais do usuário.
+As oito skills pesquisadas no manual e duas referências mobile adicionadas em 14/10/2026 estão em `.agents/skills/`, disponíveis no próprio repositório. A instalação é local ao projeto, com versões fixadas. Não altera as skills pessoais do usuário.
 
 ## Uso no Codex
 
@@ -35,7 +35,19 @@ A skill inglesa human-ai, mencionada por Humanizar, não faz parte das oito refe
 
 A instalação foi conferida contra os arquivos dos commits fixados: oito SKILL.md, metadados name/description, receitas e referências internas presentes, hashes reproduzíveis e licenças disponíveis preservadas. Scripts foram apenas armazenados. A validação não atesta desempenho no Safari, Android ou iOS; isso depende dos testes da aplicação.
 
-## Roteiro de aplicação
+## Revisão mobile
+
+`mobile-design`, de [RubenGlez/mobile-design](https://github.com/RubenGlez/mobile-design), orienta a revisão de telas, hierarquia, navegação, formulários, toque e acessibilidade em React Native e Expo. Versão 0.3.0, commit `97474ed9b969d0c7f8a2acf712e30eeb0b9078d1`.
+
+`mobile-native`, de [emilkowalski/skills](https://github.com/emilkowalski/skills), complementa a experiência de navegador mobile: viewport, safe areas, teclado, toque e zoom. Commit `2d228630ba1446365f614a108cb8252f1feda202`.
+
+Também foi pesquisada [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill), que inclui minimalismo, padrões de UI e orientações para React Native. É uma alternativa mais ampla; não foi instalada nesta revisão. A escolha das duas referências acima considera a stack e a tarefa da ELEVA, não representa avaliação de qualidade por popularidade.
+
+Instruções do agente: `.agents/reviewers/mobile-ux.md`. Ele revisa todas as rotas, mas não altera nem publica o produto durante uma revisão. Mantém a identidade da ELEVA, português brasileiro natural e linguagem sem travessões. Separa evidência de código de comportamento que exige aparelho real.
+
+As referências foram instaladas como arquivos de texto, com licença MIT preservada. Nenhum script de terceiros foi executado. `mobile-design` inclui SKILL.md, licença e referências; notas de manutenção e arquivos de avaliação do autor não são necessários ao agente consumidor. Hashes estão no manifest.
+
+## Implementação
 
 1. Ler o briefing e a documentação de design da ELEVA.
 2. Usar humanizar para redigir os textos e humanizador-pt para revisar os trechos finais.

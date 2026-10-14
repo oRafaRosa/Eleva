@@ -178,6 +178,46 @@
         "SKILL.md": "b0f4bc839162298fb105e875eceb29f35813e502f8261e4a786dbdef841edc6d",
         "UPSTREAM-LICENSE.md": "badc8316ad6e34a7b8fd8f5329d4b0e7ae7c32b76231abaab20336ad85e7e007"
       }
+    },
+    {
+      "name": "mobile-design",
+      "repository": "RubenGlez/mobile-design",
+      "commit": "97474ed9b969d0c7f8a2acf712e30eeb0b9078d1",
+      "upstream_path": ".",
+      "path": ".agents/skills/mobile-design",
+      "installed_at": "2026-10-14",
+      "files_sha256": {
+        "LICENSE": "de3c230e0c738d9ac961b53b87f507dec3a9944d633881b56cef935ad390bf29",
+        "SKILL.md": "4543ec111960fd625c15eb68e63d25a599fb433fc58367ac9cd45fae50968fb5",
+        "references/accessibility-touch.md": "c54fd2209f465b42db647d7e0eec027f89f9fe48cdcdfecc3394d3959d5c99c3",
+        "references/adaptivity-localization.md": "66faf79bf6b7efeb2e9a47b10b93fb9f78becdb3af480858f2a54147608a1344",
+        "references/design-process.md": "fa41e1be71d63f729b2587c7f4dabc3984700dc2d1689d23ac5548bd1b3f11bc",
+        "references/feasibility-risk.md": "6f3bbbcc837fd1e53e8b6397b2a67eb8f378c7dd2cd8b564e0567d5e1a0d2a52",
+        "references/forms.md": "6815330c0b19ebc70d06c23884c268397c7c668beebfd03c0fdce0d43719a497",
+        "references/motion-haptics.md": "d57adfe1cda2693abf2414ff407b7577c754bf9fa4bc9cb5716ff69b9247ed4c",
+        "references/navigation.md": "2e1f8a336bc32c1b8145d95befc2b9b1330342cc25dd6c026ee2ad753bbc374a",
+        "references/platform-android.md": "eb10881c4420be4d717371171d9d2cc162a68c8a13fc520a78e2d86a0b11eeb1",
+        "references/platform-ios.md": "1d45f0046c3afa99ff30306ae64e234f0b46557d25962877d597e644e198a01c",
+        "references/react-native-implementation.md": "28415bc3b094201fbe06e7c511257ee96e00c6430477d2d599ad3edb93a329fc",
+        "references/review-checklists.md": "b39557fb3f72f03de948d5b3beb267adf9e0bf3a8e3f5f860cd886be0378b9cb",
+        "references/review-rules.md": "cf1acf63d74668a58d348c6199578601fb132f3531b97ca27e5744951f0ad7c9",
+        "references/screen-patterns.md": "6642bf51be1d76a633509ab3b4670abb4c459f473e8af52f682464b1b834f8c0",
+        "references/source-map.md": "8eccc07796d66fe60afaa5cb681d247b13695e4ef8afdc41367f61904d3ee8a8",
+        "references/typography-color.md": "3433bca994a2efe348d72ab19f1fc681c73a66fd3c8a90523295c4fe1ee5f375",
+        "references/visual-system.md": "c8afdeb25d2cdc03ce4b9b570492bc5776ac9a473a8be6f38dc402f8b811c928"
+      }
+    },
+    {
+      "name": "mobile-native",
+      "repository": "emilkowalski/skills",
+      "commit": "2d228630ba1446365f614a108cb8252f1feda202",
+      "upstream_path": "skills/mobile-native",
+      "path": ".agents/skills/mobile-native",
+      "installed_at": "2026-10-14",
+      "files_sha256": {
+        "LICENSE": "4ff5bdb7887ec1435c9cab0e8d1a7caee704d894d65c2a008ccc68b1cc2f260b",
+        "SKILL.md": "888b7651d66d66dbac4e72b7c554638eb19bd971d686d6cbdf030a5ef3788f55"
+      }
     }
   ]
 }
