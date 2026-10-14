@@ -15,13 +15,13 @@ import { useEleva } from "../../src/state/AppProvider";
 import { createForumRepository } from "../../src/services/forum";
 import type { ForumTopic, ForumReply } from "../../src/types/forum";
 import { colors } from "../../src/theme";
-import { Illustration } from "../../src/components/Illustration";
+import { SocialAction } from "../../src/components/SocialAction";
 import { MotionBlock } from "../../src/components/MotionBlock";
 export default function Connect() {
   const { user, isDemo } = useEleva();
   const forum = useMemo(
     () => (user ? createForumRepository({ demo: isDemo, user }) : null),
-    [user?.id, user?.role, isDemo],
+    [user?.id, user?.role, user?.full_name, isDemo],
   );
   const [topics, setTopics] = useState<ForumTopic[]>([]),
     [replies, setReplies] = useState<ForumReply[]>([]),
@@ -36,11 +36,13 @@ export default function Connect() {
     [confirm, setConfirm] = useState("");
   const generation = useRef(0),
     lock = useRef(false);
+  const [menu, setMenu] = useState("");
+  const [rulesOpen, setRulesOpen] = useState(false);
   const topic = topics.find((t) => t.id === selected);
-  async function refresh() {
+  async function refresh(quiet = false) {
     if (!forum) return;
     const version = ++generation.current;
-    setLoading(true);
+    if (!quiet) setLoading(true);
     try {
       const [t, r] = await Promise.all([
         forum.listTopics(),
@@ -51,6 +53,7 @@ export default function Connect() {
         setReplies(r);
       }
     } catch (e) {
+      if (quiet) throw e;
       if (version === generation.current)
         setNotice(
           e instanceof Error
@@ -72,14 +75,17 @@ export default function Connect() {
   }, [forum, selected]);
   async function action(work: () => Promise<void>, message: string) {
     if (lock.current) return;
+    const version = generation.current;
     lock.current = true;
     setBusy(true);
     setNotice("");
     try {
       await work();
-      await refresh();
+      if (version !== generation.current) return;
+      await refresh(true);
       setNotice(message);
     } catch (e) {
+      if (version !== generation.current) return;
       setNotice(
         e instanceof Error
           ? e.message
@@ -95,34 +101,50 @@ export default function Connect() {
     const mine = user?.id === item.author_id || user?.role === "admin";
     const key = `${kind}:${item.id}`;
     return (
-      <View style={{ gap: 10, marginTop: 14 }}>
-        <View style={{ flexDirection: "row", gap: 24, flexWrap: "wrap" }}>
-          {mine && (
+      <View style={{ gap: 4 }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Opções da mensagem"
+          accessibilityState={{ expanded: menu === key }}
+          onPress={() => {
+            setMenu(menu === key ? "" : key);
+            setConfirm("");
+          }}
+          style={{ minHeight: 48, justifyContent: "center" }}
+        >
+          <Body muted style={{ fontSize: 15 }}>
+            Opções
+          </Body>
+        </Pressable>
+        {menu === key && (
+          <View style={{ flexDirection: "row", gap: 24, flexWrap: "wrap" }}>
+            {mine && (
+              <Pressable
+                accessibilityRole="button"
+                disabled={busy}
+                onPress={() => setConfirm(key)}
+                style={{ minHeight: 48, justifyContent: "center" }}
+              >
+                <Body style={{ color: colors.burgundy }}>Remover mensagem</Body>
+              </Pressable>
+            )}
             <Pressable
               accessibilityRole="button"
               disabled={busy}
-              onPress={() => setConfirm(key)}
+              onPress={() =>
+                void action(
+                  () => forum!.report(kind, item.id),
+                  isDemo
+                    ? "Mensagem sinalizada nesta prévia."
+                    : "Denúncia enviada para revisão.",
+                )
+              }
               style={{ minHeight: 48, justifyContent: "center" }}
             >
-              <Body style={{ color: colors.burgundy }}>Remover mensagem</Body>
+              <Body muted>Denunciar</Body>
             </Pressable>
-          )}
-          <Pressable
-            accessibilityRole="button"
-            disabled={busy}
-            onPress={() =>
-              void action(
-                () => forum!.report(kind, item.id),
-                isDemo
-                  ? "Mensagem sinalizada nesta prévia."
-                  : "Denúncia enviada para revisão.",
-              )
-            }
-            style={{ minHeight: 48, justifyContent: "center" }}
-          >
-            <Body muted>Denunciar</Body>
-          </Pressable>
-        </View>
+          </View>
+        )}
         {confirm === key && (
           <View style={{ gap: 10 }}>
             <Body>Remover esta mensagem? As respostas serão mantidas.</Body>
@@ -147,25 +169,61 @@ export default function Connect() {
       </View>
     );
   }
-  return (
-    <Page kicker="Comunidade ELEVA" title={topic ? "Conversa" : "Conectar"}>
-      <Body muted style={{ marginBottom: 24 }}>
-        {isDemo
-          ? "Podem abrir uma conversa e testar as respostas por aqui."
-          : "Um espaço para conversar com as integrantes da ELEVA."}
-      </Body>
+  function social(item: ForumTopic) {
+    return (
       <View
-        style={[s.panel, { backgroundColor: colors.pink, marginBottom: 24 }]}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          marginTop: 8,
+        }}
       >
-        <MotionBlock illustration style={{ marginBottom: 12 }}>
-          <Illustration kind="flower" size={88} />
-        </MotionBlock>
-        <Body>
-          Respeite as experiências de cada pessoa. Não compartilhe relatos ou
-          contatos de outras integrantes sem autorização. Denuncie mensagens que
-          precisam de revisão.
-        </Body>
+        {!item.deleted && (
+          <SocialAction
+            kind="heart"
+            count={item.like_count ?? 0}
+            active={item.liked_by_me}
+            disabled={busy}
+            onPress={() =>
+              void action(() => forum!.setLike(item.id, !item.liked_by_me), "")
+            }
+          />
+        )}
+        <SocialAction
+          kind="comment"
+          disabled={busy}
+          count={item.comment_count ?? 0}
+          onPress={() => {
+            setSelected(item.id);
+            setResponse("");
+          }}
+        />
       </View>
+    );
+  }
+  return (
+    <Page
+      title={selected ? "Comentários" : "Conectar"}
+      actions={
+        !selected && user ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: compose }}
+            onPress={() => setCompose((v) => !v)}
+            style={{
+              minHeight: 48,
+              paddingHorizontal: 12,
+              justifyContent: "center",
+            }}
+          >
+            <Body style={{ color: colors.burgundy }}>
+              {compose ? "Cancelar" : "Publicar"}
+            </Body>
+          </Pressable>
+        ) : undefined
+      }
+    >
       {!!notice && (
         <View
           accessibilityLiveRegion="polite"
@@ -180,7 +238,8 @@ export default function Connect() {
         <>
           <Button
             secondary
-            label="Voltar para as conversas"
+            label="Voltar"
+            disabled={busy}
             onPress={() => {
               setSelected(null);
               setResponse("");
@@ -191,19 +250,52 @@ export default function Connect() {
           ) : topic ? (
             <>
               <MotionBlock key={topic.id} style={[s.panel, { marginTop: 24 }]}>
-                <Body muted>
-                  {topic.author_name} ·{" "}
-                  {new Date(topic.created_at).toLocaleDateString("pt-BR")}
-                </Body>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <Body muted style={{ fontSize: 14, flexShrink: 1 }}>
+                    {topic.author_name} ·{" "}
+                    {new Date(topic.created_at).toLocaleDateString("pt-BR")}
+                  </Body>
+                  {menu !== `topic:${topic.id}` && controls(topic, "topic")}
+                </View>
                 <Title small style={{ marginVertical: 12 }}>
                   {topic.title}
                 </Title>
                 <Body>
                   {topic.deleted ? "Esta mensagem foi removida." : topic.body}
                 </Body>
-                {controls(topic, "topic")}
+                {social(topic)}
+                {menu === `topic:${topic.id}` && controls(topic, "topic")}
               </MotionBlock>
-              <Section title="Respostas" />
+              {!topic.deleted && (
+                <View style={{ gap: 12, marginTop: 16 }}>
+                  <Field
+                    label="Seu comentário"
+                    value={response}
+                    onChangeText={setResponse}
+                    multiline
+                    maxLength={3000}
+                    editable={!busy}
+                  />
+                  <Button
+                    label={busy ? "Publicando…" : "Comentar"}
+                    disabled={busy || !response.trim()}
+                    onPress={() =>
+                      void action(async () => {
+                        await forum!.reply(topic.id, response);
+                        setResponse("");
+                      }, "Comentário publicado.")
+                    }
+                  />
+                </View>
+              )}
+              <Section title="Comentários" />
               {replies.length ? (
                 replies.map((r) => (
                   <View key={r.id} style={[s.panel, { marginBottom: 16 }]}>
@@ -218,29 +310,7 @@ export default function Connect() {
                   </View>
                 ))
               ) : (
-                <Empty text="Ainda não há respostas. Você pode começar a conversa." />
-              )}
-              {!topic.deleted && (
-                <View style={{ gap: 12, marginTop: 20 }}>
-                  <Field
-                    label="Sua resposta"
-                    value={response}
-                    onChangeText={setResponse}
-                    multiline
-                    maxLength={3000}
-                    editable={!busy}
-                  />
-                  <Button
-                    label={busy ? "Salvando…" : "Enviar resposta"}
-                    disabled={busy || !response.trim()}
-                    onPress={() =>
-                      void action(async () => {
-                        await forum!.reply(topic.id, response);
-                        setResponse("");
-                      }, "Resposta publicada.")
-                    }
-                  />
-                </View>
+                <Empty text="Ainda não há comentários." />
               )}
             </>
           ) : (
@@ -249,10 +319,6 @@ export default function Connect() {
         </>
       ) : (
         <>
-          <Button
-            label={compose ? "Fechar nova conversa" : "Começar uma conversa"}
-            onPress={() => setCompose((v) => !v)}
-          />
           {compose && (
             <MotionBlock style={{ gap: 14, marginTop: 24 }}>
               <Field
@@ -271,7 +337,7 @@ export default function Connect() {
                 editable={!busy}
               />
               <Button
-                label={busy ? "Salvando…" : "Publicar conversa"}
+                label={busy ? "Publicando…" : "Publicar"}
                 disabled={busy || !title.trim() || !body.trim()}
                 onPress={() =>
                   void action(async () => {
@@ -284,39 +350,65 @@ export default function Connect() {
               />
             </MotionBlock>
           )}
-          <Section title="Conversas da comunidade" />
           {loading ? (
             <Loading />
           ) : topics.length ? (
             topics.map((t) => (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Abrir ${t.title}`}
-                key={t.id}
-                onPress={() => setSelected(t.id)}
-                style={[s.panel, { marginBottom: 16 }]}
-              >
-                <Body muted>
-                  {t.author_name} ·{" "}
-                  {new Date(t.created_at).toLocaleDateString("pt-BR")}
-                </Body>
-                <Title small style={{ marginVertical: 10 }}>
-                  {t.title}
-                </Title>
+              <View key={t.id} style={[s.article, { marginBottom: 8 }]}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <Body muted style={{ fontSize: 14, flexShrink: 1 }}>
+                    {t.author_name} ·{" "}
+                    {new Date(t.created_at).toLocaleDateString("pt-BR")}
+                  </Body>
+                  {menu !== `topic:${t.id}` && controls(t, "topic")}
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={`Abrir ${t.title}`}
+                  onPress={() => setSelected(t.id)}
+                  style={{ minHeight: 48 }}
+                >
+                  <Title small style={{ marginVertical: 10 }}>
+                    {t.title}
+                  </Title>
+                </Pressable>
                 <Body>
                   {t.deleted
                     ? "As respostas continuam disponíveis."
                     : t.body.slice(0, 180) + (t.body.length > 180 ? "…" : "")}
                 </Body>
-                <Body style={{ color: colors.burgundy, marginTop: 16 }}>
-                  Abrir conversa ↗
-                </Body>
-              </Pressable>
+                {social(t)}
+                {menu === `topic:${t.id}` && controls(t, "topic")}
+              </View>
             ))
           ) : (
-            <Empty text="Ainda não há conversas. Comece contando o que você gostaria de compartilhar." />
+            <Empty text="Ainda não há publicações. Compartilhe a primeira." />
           )}
         </>
+      )}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ expanded: rulesOpen }}
+        onPress={() => setRulesOpen((v) => !v)}
+        style={{ minHeight: 48, justifyContent: "center", marginTop: 16 }}
+      >
+        <Body muted style={{ fontSize: 14 }}>
+          Regras da comunidade
+        </Body>
+      </Pressable>
+      {rulesOpen && (
+        <Body muted style={{ fontSize: 15 }}>
+          Respeite as experiências de cada pessoa. Não compartilhe relatos ou
+          contatos de outras integrantes sem autorização. Para denunciar uma
+          mensagem, abra Opções.
+        </Body>
       )}
     </Page>
   );

@@ -1,3 +1,5 @@
+import { decodeCover } from "./coverValidation";
+import { validateChallengeDraft } from "./challengeValidation";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   Challenge,
@@ -7,10 +9,12 @@ import type {
   Publication,
   PublicationDraft,
 } from "../types/domain";
+import { validateProfileUpdate, decodeAvatar } from "./profileValidation";
 import type { Access, Activity, ElevaRepository } from "./repository";
 
 export function createSupabaseRepository(
   client: SupabaseClient,
+  options: { randomUUID?: () => string } = {},
 ): ElevaRepository {
   const currentId = async () => {
     const { data, error } = await client.auth.getUser();
@@ -50,13 +54,67 @@ export function createSupabaseRepository(
     },
     async savePublication(draft: PublicationDraft) {
       if (!draft.title.trim()) throw new Error("Preencha o título.");
-      const { id, ...fields } = draft;
-      const query = id
-        ? client.from("publications").update(fields).eq("id", id)
-        : client.from("publications").insert(fields);
-      const { data, error } = await query.select("*").single();
-      if (error) throw error;
-      return data as Publication;
+      const { id, cover_upload, ...fields } = draft;
+      const bytes = cover_upload ? decodeCover(cover_upload) : null;
+      let publicationId = id,
+        uploadedPath: string | null = null,
+        oldCover: string | null = null;
+      const removingCover = id && !cover_upload && fields.cover_path === null;
+      if (id && (bytes || removingCover)) {
+        const { data, error } = await client
+          .from("publications")
+          .select("cover_path")
+          .eq("id", id)
+          .single();
+        if (error) throw error;
+        oldCover = data?.cover_path ?? null;
+      }
+      if (bytes) {
+        await currentId();
+        const randomUUID =
+          options.randomUUID ?? (await import("expo-crypto")).randomUUID;
+        publicationId = id ?? randomUUID();
+        uploadedPath = `${publicationId}/cover-${randomUUID()}.jpg`;
+        const { error } = await client.storage
+          .from("eleva-content")
+          .upload(uploadedPath, bytes!, {
+            contentType: "image/jpeg",
+            upsert: false,
+          });
+        if (error) throw error;
+        fields.cover_path = uploadedPath;
+      }
+      try {
+        const query = id
+          ? client.from("publications").update(fields).eq("id", id)
+          : client.from("publications").insert({
+              ...fields,
+              ...(publicationId ? { id: publicationId } : {}),
+            });
+        const { data, error } = await query.select("*").single();
+        if (error) throw error;
+        // Keep the previous cover until the new path has been committed.
+        if (
+          (uploadedPath || removingCover) &&
+          oldCover?.startsWith(`${id}/cover-`)
+        ) {
+          try {
+            await client.storage.from("eleva-content").remove([oldCover]);
+          } catch {
+            /* Retain orphan for later cleanup rather than undoing the saved publication. */
+          }
+        }
+        return data as Publication;
+      } catch (error) {
+        if (uploadedPath) {
+          try {
+            await client.storage.from("eleva-content").remove([uploadedPath]);
+          } catch {
+            /* A cleanup failure does not hide the original save error. */
+          }
+        }
+        throw error;
+      }
     },
     async archivePublication(id) {
       const { error } = await client
@@ -67,6 +125,15 @@ export function createSupabaseRepository(
     },
     listEvents: () => list<ElevaEvent>("events", "starts_at"),
     listChallenges: () => list<Challenge>("challenges", "starts_on"),
+    async saveChallenge(draft) {
+      const { id, ...fields } = validateChallengeDraft(draft);
+      const query = id
+        ? client.from("challenges").update(fields).eq("id", id)
+        : client.from("challenges").insert(fields);
+      const { data, error } = await query.select("*").single();
+      if (error) throw error;
+      return data as Challenge;
+    },
     async listChallengeSteps(challengeId) {
       const { data, error } = await client
         .from("challenge_steps")
@@ -124,7 +191,68 @@ export function createSupabaseRepository(
         .eq("id", await currentId())
         .maybeSingle();
       if (error) throw error;
-      return data as Profile | null;
+      if (!data) return null;
+      let avatar_url: string | null = null;
+      if (data.avatar_path) {
+        const photo = await client.storage
+          .from("eleva-avatars")
+          .createSignedUrl(data.avatar_path, 300);
+        if (!photo.error) avatar_url = photo.data.signedUrl;
+      }
+      return { ...data, avatar_url } as Profile;
+    },
+    async updateProfile(update) {
+      const safe = validateProfileUpdate(update);
+      const id = await currentId();
+      const previous = await this.getProfile();
+      let avatar_path = previous?.avatar_path ?? null;
+      let uploaded: string | null = null;
+      if (safe.avatar_base64 === null) avatar_path = null;
+      if (safe.avatar_base64) {
+        uploaded = `${id}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.jpg`;
+        const upload = await client.storage
+          .from("eleva-avatars")
+          .upload(
+            uploaded,
+            decodeAvatar(safe.avatar_base64).buffer as ArrayBuffer,
+            { contentType: "image/jpeg", cacheControl: "300", upsert: false },
+          );
+        if (upload.error)
+          throw new Error("Não foi possível enviar a foto. Tente novamente.");
+        avatar_path = uploaded;
+      }
+      const result = await client
+        .from("profiles")
+        .update({
+          full_name: safe.full_name,
+          phone: safe.phone,
+          city: safe.city,
+          avatar_path,
+        })
+        .eq("id", id)
+        .select("*")
+        .single();
+      if (result.error) {
+        if (uploaded)
+          await client.storage.from("eleva-avatars").remove([uploaded]);
+        throw new Error("Não foi possível salvar seu perfil. Tente novamente.");
+      }
+      if (previous?.avatar_path && previous.avatar_path !== avatar_path)
+        await client.storage
+          .from("eleva-avatars")
+          .remove([previous.avatar_path]);
+      let avatar_url: string | null = null;
+      if (avatar_path) {
+        try {
+          const signed = await client.storage
+            .from("eleva-avatars")
+            .createSignedUrl(avatar_path, 300);
+          avatar_url = signed.error ? null : signed.data.signedUrl;
+        } catch {
+          /* Saved profile remains valid if photo URL refresh fails. */
+        }
+      }
+      return { ...result.data, avatar_url } as Profile;
     },
     async getAccess() {
       const { data, error } = await client

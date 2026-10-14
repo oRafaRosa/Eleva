@@ -10,6 +10,8 @@ import { View, Text, Pressable } from "react-native";
 import { getRepository, isBackendConfigured, supabase } from "../services";
 import type { ElevaRepository } from "../services/repository";
 import type {
+  Profile,
+  ProfileUpdate,
   Publication,
   ElevaEvent,
   Challenge,
@@ -22,7 +24,7 @@ import {
   type DemoAccount,
 } from "../services/demoRepository";
 import { colors, fonts } from "../theme";
-type User = { id: string; full_name: string; role: "member" | "admin" };
+type User = Profile & { role: "member" | "admin" };
 interface Context {
   repository: ElevaRepository;
   publications: Publication[];
@@ -43,6 +45,7 @@ interface Context {
   sessionReady: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateProfile: (update: ProfileUpdate) => Promise<void>;
   toggleFavorite: (id: string) => Promise<void>;
   toggleCompletion: (id: string) => Promise<void>;
   registerEvent: (id: string) => Promise<void>;
@@ -266,6 +269,19 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
       setDemoAccount(null);
       setNotice("");
       setLoading(false);
+    },
+    async updateProfile(update) {
+      if (!user) throw new Error("Entre na sua conta para continuar.");
+      const currentUser = user;
+      const version = refreshVersion.current;
+      const updated = await repository.updateProfile(update);
+      if (version !== refreshVersion.current) return;
+      setUser((existing) =>
+        existing?.id === currentUser.id
+          ? { ...updated, role: currentUser.role }
+          : existing,
+      );
+      setNotice("Perfil salvo.");
     },
     toggleFavorite(id) {
       return action(

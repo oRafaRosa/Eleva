@@ -20,6 +20,7 @@ const storage: DemoStorage = {
 };
 interface State {
   topics: ForumTopic[];
+  likes: { user_id: string; topic_id: string }[];
   replies: ForumReply[];
   reports: { user_id: string; kind: string; id: string }[];
 }
@@ -35,7 +36,10 @@ export function createDemoForum(
 ): ForumRepository {
   const load = async (): Promise<State> => {
     const raw = await store.getItem(KEY);
-    return raw ? JSON.parse(raw) : { topics: [], replies: [], reports: [] };
+    const state = raw
+      ? JSON.parse(raw)
+      : { topics: [], replies: [], reports: [] };
+    return { ...state, likes: state.likes ?? [] };
   };
   const save = (s: State) => store.setItem(KEY, JSON.stringify(s));
   const identity = () => ({
@@ -47,9 +51,34 @@ export function createDemoForum(
   });
   return {
     async listTopics() {
-      return (await load()).topics.sort((a, b) =>
-        b.created_at.localeCompare(a.created_at),
+      const state = await load();
+      return state.topics
+        .map((topic) => ({
+          ...topic,
+          like_count: topic.deleted
+            ? 0
+            : state.likes.filter((like) => like.topic_id === topic.id).length,
+          liked_by_me:
+            !topic.deleted &&
+            state.likes.some(
+              (like) => like.topic_id === topic.id && like.user_id === user.id,
+            ),
+          comment_count: state.replies.filter(
+            (reply) => reply.topic_id === topic.id && !reply.deleted,
+          ).length,
+        }))
+        .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    },
+    async setLike(topicId, liked) {
+      const state = await load();
+      const topic = state.topics.find((item) => item.id === topicId);
+      if (!topic || (liked && topic.deleted))
+        throw new Error("Esta conversa foi removida.");
+      state.likes = state.likes.filter(
+        (like) => !(like.topic_id === topicId && like.user_id === user.id),
       );
+      if (liked) state.likes.push({ topic_id: topicId, user_id: user.id });
+      await save(state);
     },
     async listReplies(topicId) {
       return (await load()).replies.filter((r) => r.topic_id === topicId);
@@ -57,6 +86,9 @@ export function createDemoForum(
     async createTopic(title, body) {
       const topic = {
         ...identity(),
+        like_count: 0,
+        liked_by_me: false,
+        comment_count: 0,
         title: forumText(title, 120, "Título"),
         body: forumText(body, 3000, "Mensagem"),
       };
@@ -139,7 +171,24 @@ export function createForumRepository(options: {
     return (data ?? []) as T[];
   };
   return {
-    listTopics: () => list<ForumTopic>("forum_topics"),
+    listTopics: () => list<ForumTopic>("forum_topic_stats"),
+    async setLike(topicId, liked) {
+      const c = await client();
+      const userId = await uid();
+      const result = liked
+        ? await c
+            .from("forum_likes")
+            .upsert(
+              { user_id: userId, topic_id: topicId },
+              { onConflict: "user_id,topic_id", ignoreDuplicates: true },
+            )
+        : await c
+            .from("forum_likes")
+            .delete()
+            .eq("user_id", userId)
+            .eq("topic_id", topicId);
+      if (result.error) throw result.error;
+    },
     listReplies: (id) => list<ForumReply>("forum_replies", id),
     async createTopic(title, body) {
       const c = await client();
@@ -153,7 +202,12 @@ export function createForumRepository(options: {
         .select("*")
         .single();
       if (error) throw error;
-      return data as ForumTopic;
+      return {
+        ...data,
+        like_count: 0,
+        liked_by_me: false,
+        comment_count: 0,
+      } as ForumTopic;
     },
     async reply(topicId, body) {
       const c = await client();

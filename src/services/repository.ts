@@ -1,8 +1,10 @@
 import type {
   Challenge,
+  ChallengeDraft,
   ChallengeStep,
   ElevaEvent,
   Profile,
+  ProfileUpdate,
   Publication,
   PublicationDraft,
 } from "../types/domain";
@@ -23,6 +25,7 @@ export interface ElevaRepository {
   archivePublication(id: string): Promise<void>;
   listEvents(): Promise<ElevaEvent[]>;
   listChallenges(): Promise<Challenge[]>;
+  saveChallenge(draft: ChallengeDraft): Promise<Challenge>;
   listChallengeSteps(challengeId: string): Promise<ChallengeStep[]>;
   getActivity(): Promise<Activity>;
   setFavorite(id: string, enabled: boolean): Promise<void>;
@@ -31,5 +34,6 @@ export interface ElevaRepository {
   cancelRegistration(id: string): Promise<void>;
   setChallengeStep(id: string, enabled: boolean): Promise<void>;
   getProfile(): Promise<Profile | null>;
+  updateProfile(update: ProfileUpdate): Promise<Profile>;
   getAccess(): Promise<Access | null>;
 }

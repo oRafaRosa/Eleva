@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Platform,
+  Image,
 } from "react-native";
 import Animated, {
   Easing,
@@ -13,6 +14,11 @@ import Animated, {
   ReduceMotion,
 } from "react-native-reanimated";
 import { Body, Title, Button, Field, Chip, s } from "../ui";
+import {
+  pickPublicationCover,
+  type PreparedCover,
+} from "../../services/publicationCover";
+import { ContentCover } from "../ui";
 import { colors, fonts } from "../../theme";
 import type {
   Publication,
@@ -48,6 +54,9 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
   const [details, setDetails] = useState<Record<string, unknown>>(
     item?.details || {},
   );
+  const [coverPath, setCoverPath] = useState(item?.cover_path || null);
+  const [coverUpload, setCoverUpload] = useState<PreparedCover | null>(null);
+  const [pickingCover, setPickingCover] = useState(false);
   const [media, setMedia] = useState(item?.media_url || "");
   const initialSchedule = scheduleFields(item?.scheduled_at || null);
   const [day, setDay] = useState(initialSchedule.day);
@@ -57,6 +66,14 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
   const [discard, setDiscard] = useState(false);
   const [busy, setBusy] = useState(false);
   const saving = useRef(false);
+  const pickerLock = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const [error, setError] = useState("");
   const [intent, setIntent] = useState<"published" | "scheduled" | null>(null);
   const edit = (setter: (value: string) => void) => (value: string) => {
@@ -70,7 +87,7 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
     setIntent(null);
   };
   const close = () => {
-    if (busy) return;
+    if (busy || pickingCover) return;
     if (dirty) setDiscard(true);
     else onClose();
   };
@@ -148,12 +165,20 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
       details: contentDetails,
       reference_date: type === "devotional" ? reference : null,
       media_url: media.trim() || null,
-      cover_path: item?.cover_path || null,
+      cover_path: coverPath,
+      ...(coverUpload
+        ? {
+            cover_upload: {
+              base64: coverUpload.base64,
+              mimeType: coverUpload.mimeType,
+            },
+          }
+        : {}),
       scheduled_at: status === "scheduled" ? scheduledInstant(day, time) : null,
     };
   }
   async function save(status: PublicationDraft["status"]) {
-    if (saving.current) return;
+    if (saving.current || pickingCover) return;
     setError("");
     try {
       const draft = makeDraft(status);
@@ -172,6 +197,31 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
     } finally {
       saving.current = false;
       setBusy(false);
+    }
+  }
+  async function chooseCover() {
+    if (busy || pickerLock.current) return;
+    pickerLock.current = true;
+    setPickingCover(true);
+    setError("");
+    try {
+      const selected = await pickPublicationCover();
+      if (!mounted.current) return;
+      if (selected) {
+        setCoverUpload(selected);
+        setDirty(true);
+        setIntent(null);
+      }
+    } catch (e) {
+      if (!mounted.current) return;
+      setError(
+        e instanceof Error
+          ? e.message
+          : "Não foi possível abrir a imagem. Tente novamente.",
+      );
+    } finally {
+      pickerLock.current = false;
+      if (mounted.current) setPickingCover(false);
     }
   }
   const requestPublish = (next: "published" | "scheduled") => {
@@ -213,7 +263,12 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                   ? "Editar conteúdo"
                   : "Novo conteúdo"}
             </Title>
-            <Button label="Fechar" secondary onPress={close} disabled={busy} />
+            <Button
+              label="Fechar"
+              secondary
+              onPress={close}
+              disabled={busy || pickingCover}
+            />
           </View>
           <ScrollView
             keyboardShouldPersistTaps="handled"
@@ -237,6 +292,21 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
               <>
                 {preview ? (
                   <View style={styles.preview}>
+                    {coverUpload ? (
+                      <Image
+                        source={{ uri: coverUpload.preview }}
+                        accessibilityLabel="Imagem da publicação"
+                        style={{
+                          width: "100%",
+                          height: 180,
+                          borderRadius: 4,
+                          marginBottom: 16,
+                        }}
+                        resizeMode="cover"
+                      />
+                    ) : coverPath ? (
+                      <ContentCover path={coverPath} variant="banner" />
+                    ) : null}
                     <Body muted>
                       {typeLabels[type]} / {pillarLabels[pillar]}
                     </Body>
@@ -284,10 +354,6 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                   </View>
                 ) : (
                   <>
-                    <Body muted>
-                      Escolha o formato e preencha o conteúdo. Você pode salvar
-                      agora e publicar depois.
-                    </Body>
                     <Text style={styles.label}>Formato</Text>
                     <View style={s.row}>
                       {Object.entries(typeLabels).map(([key, label]) => (
@@ -329,6 +395,49 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                       editable={!busy}
                       maxLength={180}
                     />
+                    <View style={{ gap: 10 }}>
+                      {coverUpload ? (
+                        <Image
+                          source={{ uri: coverUpload.preview }}
+                          accessibilityLabel="Imagem selecionada"
+                          style={{
+                            width: "100%",
+                            height: 150,
+                            borderRadius: 4,
+                          }}
+                          resizeMode="contain"
+                        />
+                      ) : coverPath ? (
+                        <ContentCover path={coverPath} variant="banner" />
+                      ) : null}
+                      <View style={s.row}>
+                        <Button
+                          label={
+                            pickingCover
+                              ? "Preparando imagem…"
+                              : coverUpload || coverPath
+                                ? "Trocar imagem"
+                                : "Adicionar imagem"
+                          }
+                          secondary
+                          disabled={busy || pickingCover}
+                          onPress={() => void chooseCover()}
+                        />
+                        {(coverUpload || coverPath) && (
+                          <Button
+                            label="Remover imagem"
+                            secondary
+                            disabled={busy || pickingCover}
+                            onPress={() => {
+                              setCoverUpload(null);
+                              setCoverPath(null);
+                              setDirty(true);
+                              setIntent(null);
+                            }}
+                          />
+                        )}
+                      </View>
+                    </View>
                     <Field
                       label="Resumo (opcional)"
                       value={summary}
@@ -400,8 +509,7 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                     <View style={styles.schedule}>
                       <Title small>Agendamento</Title>
                       <Body muted>
-                        Fuso: America/Sao_Paulo. O conteúdo ficará disponível no
-                        horário escolhido.
+                        Horário de São Paulo (America/Sao_Paulo).
                       </Body>
                       <Field
                         label="Data de publicação (AAAA-MM-DD)"
@@ -444,13 +552,13 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                             ? "Confirmar publicação"
                             : "Confirmar agendamento"
                       }
-                      disabled={busy}
+                      disabled={busy || pickingCover}
                       onPress={() => void save(intent)}
                     />
                     <Button
                       label="Voltar ao conteúdo"
                       secondary
-                      disabled={busy}
+                      disabled={busy || pickingCover}
                       onPress={() => setIntent(null)}
                     />
                   </View>
@@ -459,7 +567,7 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                   <Button
                     label={preview ? "Voltar à edição" : "Ver prévia"}
                     secondary
-                    disabled={busy}
+                    disabled={busy || pickingCover}
                     onPress={() => {
                       setPreview((v) => !v);
                       setIntent(null);
@@ -468,17 +576,17 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                   <Button
                     label={busy ? "Salvando…" : "Salvar rascunho"}
                     secondary
-                    disabled={busy}
+                    disabled={busy || pickingCover}
                     onPress={() => void save("draft")}
                   />
                   <Button
                     label="Agendar"
-                    disabled={busy}
+                    disabled={busy || pickingCover}
                     onPress={() => requestPublish("scheduled")}
                   />
                   <Button
                     label="Publicar agora"
-                    disabled={busy}
+                    disabled={busy || pickingCover}
                     onPress={() => requestPublish("published")}
                   />
                 </View>
@@ -522,7 +630,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: colors.line,
   },
-  form: { padding: 22, gap: 18 },
+  form: { padding: 20, gap: 14 },
   label: { fontFamily: fonts.medium, color: colors.ink, fontSize: 16 },
   multiline: { minHeight: 90, textAlignVertical: "top" },
   schedule: {

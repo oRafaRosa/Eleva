@@ -29,9 +29,6 @@ export default function Home() {
       }
     >
       {error && <Empty text={error} />}
-      <Body muted style={{ marginBottom: 24 }}>
-        Veja o que preparamos para hoje.
-      </Body>
       {loading ? (
         <Loading />
       ) : devotional ? (

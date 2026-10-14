@@ -8,7 +8,10 @@ export type PublicationType =
   | "post";
 export type Pillar = "body" | "mind" | "spirit";
 export type PublicationStatus =
-  "draft" | "scheduled" | "published" | "archived";
+  | "draft"
+  | "scheduled"
+  | "published"
+  | "archived";
 export interface Publication {
   id: string;
   title: string;
@@ -27,7 +30,9 @@ export interface Publication {
   created_at: string;
   updated_at: string;
 }
-export type PublicationDraft = Pick<
+export type PublicationDraft = {
+  cover_upload?: { base64: string; mimeType: "image/jpeg" };
+} & Pick<
   Publication,
   "title" | "summary" | "body" | "type" | "pillar" | "status"
 > &
@@ -53,6 +58,7 @@ export interface ElevaEvent {
   status: "draft" | "published" | "cancelled";
 }
 export interface Challenge {
+  gymrats_url?: string | null;
   id: string;
   title: string;
   description: string;
@@ -60,6 +66,11 @@ export interface Challenge {
   ends_on: string;
   status: "draft" | "published" | "archived";
 }
+export type ChallengeDraft = Pick<
+  Challenge,
+  "title" | "description" | "starts_on" | "ends_on" | "status"
+> &
+  Partial<Pick<Challenge, "id" | "gymrats_url">>;
 export interface ChallengeStep {
   id: string;
   challenge_id: string;
@@ -70,4 +81,15 @@ export interface Profile {
   id: string;
   full_name: string;
   avatar_path: string | null;
+  avatar_url?: string | null;
+  phone?: string | null;
+  city?: string | null;
+}
+
+export interface ProfileUpdate {
+  full_name: string;
+  phone?: string | null;
+  city?: string | null;
+  /** JPEG base64, null removes the photo, undefined keeps the existing photo. */
+  avatar_base64?: string | null;
 }

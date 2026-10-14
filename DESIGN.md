@@ -12,6 +12,10 @@ Layout mobile primeiro, conteúdo alinhado à esquerda. Margem 20, escala de esp
 
 Cinco abas Início, Aprender, Viver, Conectar, Meu ELEVA. Início destaca devocional e oferece aula, desafio, encontro e novidades. Diferenciar leitura, prática e participação. Evitar grade de cartões idênticos, gradientes roxos/azuis, glassmorphism, ícones decorativos repetidos e cápsulas em todo controle. Imagens reais somente com origem e permissão adequadas; não inventar fotos ou depoimentos das fundadoras.
 
+Telas internas priorizam conteúdo no primeiro viewport. Cabeçalho compacto, sem slogan ou introdução repetida. Busca e filtros de Aprender e do admin ficam recolhidos até a pessoa abrir; critérios ativos e Limpar continuam visíveis. Regras da comunidade ficam acessíveis ao final, opções de moderação recolhidas. Publicações da comunidade usam coração e comentários. Meu ELEVA concentra identidade, editar perfil e conteúdos salvos.
+
+Capas nas listagens usam miniatura de 84x84 ao lado do título, resumo até duas linhas. O destaque permite imagem de 128px de altura; a leitura aberta reserva até 240px, sem recortar a imagem. Campos de upload e imagens não substituem título, ação ou texto legível. Desafios externos oferecem Abrir no GymRats; o app não inventa progresso nem inscrição nesse serviço.
+
 ## Escrita
 
 Português BR natural, direto e acolhedor. Sem travessões, slogans genéricos, promessas de cura, cobrança por ausência ou superlativos sem prova. Botões explicam a ação: Ler devocional, Salvar, Confirmar presença, Agendar publicação. Confirmações dependem da resposta real do serviço.

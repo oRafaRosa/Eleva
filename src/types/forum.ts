@@ -7,6 +7,9 @@ export interface ForumTopic {
   id: string;
   author_id: string;
   author_name: string;
+  like_count?: number;
+  liked_by_me?: boolean;
+  comment_count?: number;
   title: string;
   body: string;
   deleted: boolean;
@@ -23,6 +26,7 @@ export interface ForumReply {
 }
 export interface ForumRepository {
   listTopics(): Promise<ForumTopic[]>;
+  setLike(topicId: string, liked: boolean): Promise<void>;
   listReplies(topicId: string): Promise<ForumReply[]>;
   createTopic(title: string, body: string): Promise<ForumTopic>;
   reply(topicId: string, body: string): Promise<ForumReply>;

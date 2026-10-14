@@ -8,6 +8,7 @@ import {
   Empty,
   Loading,
   s,
+  ContentCover,
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
 import { typeLabels, pillarLabels, colors } from "../../src/theme";
@@ -50,6 +51,7 @@ export default function Content() {
       kicker={`${typeLabels[p.type]} / ${pillarLabels[p.pillar]}`}
       title={p.title}
     >
+      {p.cover_path && <ContentCover path={p.cover_path} variant="detail" />}
       <Body muted style={{ marginBottom: 28 }}>
         {p.summary}
       </Body>

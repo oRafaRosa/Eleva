@@ -1,3 +1,5 @@
+import { decodeCover } from "./coverValidation";
+import { validateChallengeDraft } from "./challengeValidation";
 export interface DemoStorage {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<void>;
@@ -20,7 +22,9 @@ import type {
   ElevaEvent,
   Challenge,
   ChallengeStep,
+  Profile,
 } from "../types/domain";
+import { validateProfileUpdate } from "./profileValidation";
 import type { Activity, ElevaRepository } from "./repository";
 
 const STORAGE_KEY = "eleva:demo:v1";
@@ -148,7 +152,9 @@ export async function saveDemoSession(
   await storage.setItem(DEMO_SESSION_KEY, account ?? "");
 }
 interface DemoState {
+  challenges?: Challenge[];
   publications: Publication[];
+  profiles?: Partial<Record<DemoAccount, Profile>>;
   activities: Partial<Record<DemoAccount, Activity>>;
   activity?: Activity;
 }
@@ -204,6 +210,8 @@ export function createDemoRepository(
           ),
       };
     });
+    if (!Array.isArray(state!.challenges))
+      state!.challenges = JSON.parse(JSON.stringify(challenges));
     // O formato antigo guardava uma única atividade, agora atribuída à Marina.
     if (!state!.activities)
       state!.activities = { marina: state!.activity ?? emptyActivity() };
@@ -244,12 +252,17 @@ export function createDemoRepository(
         throw new Error("Escolha a data do devocional.");
       if (draft.status === "scheduled" && !draft.scheduled_at)
         throw new Error("Escolha quando publicar.");
+      const { cover_upload, ...fields } = draft;
+      if (cover_upload) decodeCover(cover_upload);
       const s = await load();
       const existing = s.publications.find((p) => p.id === draft.id);
       const p: Publication = {
         ...base,
         ...existing,
-        ...draft,
+        ...fields,
+        ...(cover_upload
+          ? { cover_path: `data:image/jpeg;base64,${cover_upload.base64}` }
+          : {}),
         id:
           draft.id ??
           `demo-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -293,7 +306,31 @@ export function createDemoRepository(
     },
     async listChallenges() {
       requireAccount();
-      return challenges;
+      return (await load())
+        .challenges!.filter(
+          (challenge) => role === "admin" || challenge.status === "published",
+        )
+        .map((challenge) => ({ ...challenge }));
+    },
+    async saveChallenge(draft) {
+      admin();
+      const safe = validateChallengeDraft(draft),
+        s = await load();
+      if (
+        safe.id &&
+        !s.challenges!.some((challenge) => challenge.id === safe.id)
+      )
+        throw new Error("Desafio não encontrado.");
+      const challenge: Challenge = {
+        ...safe,
+        id:
+          safe.id ??
+          `demo-challenge-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      };
+      s.challenges = s.challenges!.filter((item) => item.id !== challenge.id);
+      s.challenges.unshift(challenge);
+      await persist();
+      return challenge;
     },
     async listChallengeSteps(id) {
       requireAccount();
@@ -310,13 +347,40 @@ export function createDemoRepository(
     cancelRegistration: (id) => toggle("eventIds", id, false),
     setChallengeStep: (id, value) => toggle("stepIds", id, value),
     async getProfile() {
-      return selected
-        ? {
-            id: `demo-${selected}`,
-            full_name: selected === "rebeca" ? "Rebeca" : "Marina",
-            avatar_path: null,
-          }
-        : null;
+      if (!selected) return null;
+      const state = await load();
+      return (
+        state.profiles?.[selected] ?? {
+          id: `demo-${selected}`,
+          full_name: selected === "rebeca" ? "Rebeca" : "Marina",
+          avatar_path: null,
+          phone: null,
+          city: null,
+        }
+      );
+    },
+    async updateProfile(update) {
+      const account = requireAccount();
+      const safe = validateProfileUpdate(update);
+      const profile = (await this.getProfile())!;
+      const state = await load();
+      const avatar =
+        safe.avatar_base64 === undefined
+          ? profile.avatar_path
+          : safe.avatar_base64 === null
+            ? null
+            : `data:image/jpeg;base64,${safe.avatar_base64}`;
+      const updated: Profile = {
+        id: profile.id,
+        full_name: safe.full_name,
+        phone: safe.phone,
+        city: safe.city,
+        avatar_path: avatar,
+        avatar_url: avatar,
+      };
+      state.profiles = { ...state.profiles, [account]: updated };
+      await persist();
+      return updated;
     },
     async getAccess() {
       return selected ? { role, active: true } : null;

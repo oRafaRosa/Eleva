@@ -32,37 +32,12 @@ export default function Welcome() {
         </Body>
         <View style={{ gap: 12, marginTop: 32 }}>
           <Button
-            label="Conhecer a plataforma"
+            label="Entrar na ELEVA"
             onPress={() => {
               router.push("/login");
             }}
           />
-          <Button
-            secondary
-            label="Já faço parte. Quero entrar"
-            onPress={() => router.push("/login")}
-          />
         </View>
-      </View>
-      <View style={styles.about}>
-        <Title small>Encontros entre mulheres.</Title>
-        <Body muted style={{ marginTop: 14 }}>
-          A ELEVA reúne conteúdos para o dia a dia e experiências para estar
-          perto. Você encontra leituras, aulas, treinos e atividades em um só
-          lugar.
-        </Body>
-      </View>
-      <View style={styles.pillars}>
-        {[
-          ["Corpo", "Movimento, treinos e cuidado com a saúde."],
-          ["Mente", "Conversas, aprendizados e tempo para respirar."],
-          ["Espírito", "Devocionais, oração e reflexão."],
-        ].map(([title, text]) => (
-          <View key={title} style={styles.pillar}>
-            <Title small>{title}</Title>
-            <Body muted>{text}</Body>
-          </View>
-        ))}
       </View>
     </Page>
   );

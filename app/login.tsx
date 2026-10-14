@@ -82,12 +82,9 @@ export default function Login() {
           />
         </View>
       )}
-      <Title small>Escolham um acesso</Title>
       <Body muted style={{ marginTop: 12, marginBottom: 22 }}>
-        Preparei essa prévia para vocês conhecerem o app e testarem as telas.
-        Podem entrar como Marina para ver a área das integrantes ou como Rebeca
-        para conhecer o painel de administração. Não precisa de senha. Os
-        conteúdos e as ações são exemplos para esta apresentação.
+        Preparei esta prévia para vocês testarem o app. Escolham um acesso, sem
+        senha. Os conteúdos e as ações são exemplos.
       </Body>
       <View style={{ gap: 16 }}>
         <View
@@ -95,10 +92,6 @@ export default function Login() {
         >
           <Title small>Marina</Title>
           <Body>Integrante</Body>
-          <Body muted>
-            Veja os conteúdos, salve seus favoritos, participe dos desafios e
-            converse na comunidade.
-          </Body>
           <Button
             label="Entrar como Marina"
             disabled={busy}
@@ -108,10 +101,6 @@ export default function Login() {
         <View style={s.panel}>
           <Title small>Rebeca</Title>
           <Body>Administradora</Body>
-          <Body muted>
-            Crie publicações, agende os devocionais e organize a programação da
-            ELEVA.
-          </Body>
           <Button
             secondary
             label="Entrar como Rebeca"

@@ -1,4 +1,4 @@
-import { View } from "react-native";
+import { Image, Text, View } from "react-native";
 import { router } from "expo-router";
 import {
   Page,
@@ -8,30 +8,61 @@ import {
   PublicationCard,
   Empty,
   Button,
-  s,
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
+import { colors, fonts } from "../../src/theme";
 export default function Profile() {
-  const { user, isDemo, favorites, completions, publications, logout } =
-    useEleva();
+  const { user, favorites, publications, logout } = useEleva();
   return (
-    <Page kicker="Seu espaço" title="Meu ELEVA">
-      <View style={s.panel}>
-        <Title small>{user?.full_name || "Visitante"}</Title>
-        <Body muted>Sua conta na ELEVA</Body>
-        <Body>
-          {completions.length}{" "}
-          {completions.length === 1
-            ? "conteúdo concluído"
-            : "conteúdos concluídos"}
-        </Body>
-        {!user && (
-          <Button
-            label="Entrar na minha conta"
-            onPress={() => router.push("/login")}
-          />
-        )}
+    <Page title="Meu ELEVA">
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 18,
+          paddingVertical: 8,
+          marginBottom: 16,
+        }}
+      >
+        <View
+          style={{
+            width: 76,
+            height: 76,
+            borderRadius: 38,
+            overflow: "hidden",
+            backgroundColor: colors.pink,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {user?.avatar_url ? (
+            <Image
+              source={{ uri: user.avatar_url }}
+              accessibilityLabel="Sua foto de perfil"
+              style={{ width: 76, height: 76 }}
+            />
+          ) : (
+            <Text
+              style={{
+                fontFamily: fonts.serif,
+                fontSize: 34,
+                color: colors.burgundy,
+              }}
+            >
+              {user?.full_name.slice(0, 1).toUpperCase()}
+            </Text>
+          )}
+        </View>
+        <View style={{ flex: 1, gap: 4 }}>
+          <Title small>{user?.full_name}</Title>
+          {!!user?.city && <Body muted>{user.city}</Body>}
+        </View>
       </View>
+      <Button
+        secondary
+        label="Editar perfil"
+        onPress={() => router.push("/profile-edit")}
+      />
       <Section title="Salvos para depois" />
       {publications
         .filter((p) => favorites.includes(p.id))
@@ -41,20 +72,17 @@ export default function Profile() {
       {!favorites.length && (
         <Empty text="Use “Salvar” em um conteúdo para encontrá-lo aqui." />
       )}
-      <Section title="Conta" />
-      {user?.role === "admin" && (
-        <Button
-          label="Abrir painel administrativo"
-          onPress={() => router.push("/admin")}
-        />
-      )}
-      <View style={{ marginTop: 12 }}>
+      <View style={{ gap: 12, marginTop: 32 }}>
+        {user?.role === "admin" && (
+          <Button
+            label="Abrir painel administrativo"
+            onPress={() => router.push("/admin")}
+          />
+        )}
         <Button
           secondary
           label="Sair da conta"
-          onPress={() => {
-            void logout().then(() => router.replace("/login"));
-          }}
+          onPress={() => void logout().then(() => router.replace("/login"))}
         />
       </View>
     </Page>

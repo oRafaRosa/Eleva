@@ -18,6 +18,7 @@ import {
   Loading,
   s,
 } from "../src/components/ui";
+import { ChallengeEditor } from "../src/components/admin/ChallengeEditor";
 import { PublicationEditor } from "../src/components/admin/PublicationEditor";
 import {
   typeLabels,
@@ -32,6 +33,8 @@ import type {
   PublicationDraft,
   PublicationStatus,
   PublicationType,
+  Challenge,
+  ChallengeDraft,
 } from "../src/types/domain";
 
 export default function AdminScreen() {
@@ -41,11 +44,20 @@ export default function AdminScreen() {
   const requestVersion = useRef(0);
   const [allowed, setAllowed] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [challengeEditor, setChallengeEditor] = useState<{
+    item: Challenge | null;
+  } | null>(null);
   const [items, setItems] = useState<Publication[]>([]);
-  const [section, setSection] = useState<"content" | "calendar">("content");
+  const [section, setSection] = useState<"content" | "calendar" | "challenges">(
+    "content",
+  );
   const [status, setStatus] = useState<PublicationStatus | "all">("all");
   const [type, setType] = useState<PublicationType | "all">("all");
   const [search, setSearch] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [moreActions, setMoreActions] = useState<string | null>(null);
+  const hasFilters = search.length > 0 || status !== "all" || type !== "all";
   const [period, setPeriod] = useState(localDate().slice(0, 7));
   const [editor, setEditor] = useState<{ item: Publication | null } | null>(
     null,
@@ -70,8 +82,14 @@ export default function AdminScreen() {
       if (version !== requestVersion.current) return;
       if (!access || access.role !== "admin" || !access.active) return;
       setAllowed(true);
-      const content = await repository.listPublications();
-      if (version === requestVersion.current) setItems(content);
+      const [content, challenges] = await Promise.all([
+        repository.listPublications(),
+        repository.listChallenges(),
+      ]);
+      if (version === requestVersion.current) {
+        setItems(content);
+        setChallenges(challenges);
+      }
     } catch (e) {
       if (version === requestVersion.current)
         setError(
@@ -92,13 +110,29 @@ export default function AdminScreen() {
   async function reloadAfterMutation() {
     // A committed write remains successful if fetching the new list later fails.
     try {
-      setItems(await repository.listPublications());
+      const [content, challenges] = await Promise.all([
+        repository.listPublications(),
+        repository.listChallenges(),
+      ]);
+      setItems(content);
+      setChallenges(challenges);
       await refresh();
     } catch {
       setError(
         "A alteração foi salva, mas a lista não atualizou. Recarregue os conteúdos.",
       );
     }
+  }
+  async function saveChallenge(draft: ChallengeDraft) {
+    await repository.saveChallenge(draft);
+    setMessage(
+      draft.status === "published"
+        ? "Desafio publicado."
+        : draft.status === "archived"
+          ? "Desafio arquivado."
+          : "Rascunho salvo.",
+    );
+    await reloadAfterMutation();
   }
   async function save(draft: PublicationDraft) {
     await repository.savePublication(draft);
@@ -254,14 +288,29 @@ export default function AdminScreen() {
             setEditor({ item });
           }}
         />
-        {item.status === "scheduled" && (
+        {item.status !== "archived" && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Mais ações para ${item.title}`}
+            accessibilityState={{ expanded: moreActions === item.id }}
+            onPress={() =>
+              setMoreActions((current) =>
+                current === item.id ? null : item.id,
+              )
+            }
+            style={styles.textButton}
+          >
+            <Text style={styles.navText}>Mais</Text>
+          </Pressable>
+        )}
+        {moreActions === item.id && item.status === "scheduled" && (
           <Button
             label="Cancelar agendamento"
             secondary
             onPress={() => setPendingAction({ item, action: "cancel" })}
           />
         )}
-        {item.status !== "archived" && (
+        {moreActions === item.id && item.status !== "archived" && (
           <Button
             label="Arquivar"
             secondary
@@ -292,6 +341,14 @@ export default function AdminScreen() {
         style={[styles.navItem, section === "calendar" && styles.navSelected]}
       >
         <Text style={styles.navText}>Calendário editorial</Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ selected: section === "challenges" }}
+        onPress={() => setSection("challenges")}
+        style={[styles.navItem, section === "challenges" && styles.navSelected]}
+      >
+        <Text style={styles.navText}>Desafios</Text>
       </Pressable>
       <View style={{ height: 20 }} />
       <Button
@@ -324,6 +381,11 @@ export default function AdminScreen() {
                 onPress={() => setSection("calendar")}
               />
               <Chip
+                label="Desafios"
+                active={section === "challenges"}
+                onPress={() => setSection("challenges")}
+              />
+              <Chip
                 label="Plataforma"
                 onPress={() => router.push("/(tabs)/home")}
               />
@@ -333,19 +395,19 @@ export default function AdminScreen() {
         <View style={styles.header}>
           <View style={{ flex: 1, minWidth: 200 }}>
             <Title>
-              {section === "content" ? "Conteúdos" : "Calendário editorial"}
-            </Title>
-            <Body muted style={{ marginTop: 10 }}>
               {section === "content"
-                ? "Organize as publicações e prepare os próximos dias."
-                : "Confira as publicações e os dias que ainda precisam de devocional."}
-            </Body>
+                ? "Conteúdos"
+                : section === "challenges"
+                  ? "Desafios"
+                  : "Calendário editorial"}
+            </Title>
           </View>
           <Button
-            label="Novo conteúdo"
+            label={section === "challenges" ? "Novo desafio" : "Novo conteúdo"}
             onPress={() => {
               setMessage("");
-              setEditor({ item: null });
+              if (section === "challenges") setChallengeEditor({ item: null });
+              else setEditor({ item: null });
             }}
           />
         </View>
@@ -401,49 +463,105 @@ export default function AdminScreen() {
             </View>
           </View>
         )}
-        {section === "content" ? (
+        {section === "challenges" ? (
+          challenges.length ? (
+            challenges.map((challenge) => (
+              <View key={challenge.id} style={styles.contentRow}>
+                <View style={{ flex: 1, minWidth: 160, gap: 5 }}>
+                  <Text style={styles.itemTitle}>{challenge.title}</Text>
+                  <Body muted>
+                    {statusLabels[challenge.status]} /{" "}
+                    {challenge.starts_on.split("-").reverse().join("/")} a{" "}
+                    {challenge.ends_on.split("-").reverse().join("/")}
+                  </Body>
+                  {challenge.gymrats_url && <Body muted>GymRats</Body>}
+                </View>
+                <Button
+                  label="Editar"
+                  secondary
+                  onPress={() => setChallengeEditor({ item: challenge })}
+                />
+              </View>
+            ))
+          ) : (
+            <Empty text="Nenhum desafio cadastrado. Use Novo desafio para criar." />
+          )
+        ) : section === "content" ? (
           <>
-            <View style={styles.filters}>
-              <Field
-                label="Buscar por título ou resumo"
-                value={search}
-                onChangeText={setSearch}
-                placeholder="Buscar conteúdo"
-              />
-              <View style={s.row}>
-                <Chip
-                  label="Todos os status"
-                  active={status === "all"}
-                  onPress={() => setStatus("all")}
-                />
-                {Object.entries(statusLabels).map(([key, label]) => (
-                  <Chip
-                    key={key}
-                    label={label}
-                    active={status === key}
-                    onPress={() => setStatus(key as PublicationStatus)}
-                  />
-                ))}
-              </View>
-              <View style={s.row}>
-                <Chip
-                  label="Todos os formatos"
-                  active={type === "all"}
-                  onPress={() => setType("all")}
-                />
-                {Object.entries(typeLabels).map(([key, label]) => (
-                  <Chip
-                    key={key}
-                    label={label}
-                    active={type === key}
-                    onPress={() => setType(key as PublicationType)}
-                  />
-                ))}
-              </View>
+            <View style={styles.toolbar}>
+              <Body muted style={{ flex: 1 }}>
+                {visible.length}{" "}
+                {visible.length === 1 ? "conteúdo" : "conteúdos"}
+              </Body>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ expanded: filtersOpen }}
+                onPress={() => setFiltersOpen((value) => !value)}
+                style={styles.textButton}
+              >
+                <Text style={styles.navText}>
+                  {filtersOpen
+                    ? "Fechar filtros"
+                    : hasFilters
+                      ? "Filtrar (ativo)"
+                      : "Filtrar"}
+                </Text>
+              </Pressable>
+              {hasFilters && (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Limpar busca e filtros"
+                  onPress={() => {
+                    setSearch("");
+                    setStatus("all");
+                    setType("all");
+                  }}
+                  style={styles.textButton}
+                >
+                  <Text style={styles.navText}>Limpar</Text>
+                </Pressable>
+              )}
             </View>
-            <Body muted style={{ marginBottom: 12 }}>
-              {visible.length} {visible.length === 1 ? "conteúdo" : "conteúdos"}
-            </Body>
+            {filtersOpen && (
+              <View style={styles.filters}>
+                <Field
+                  label="Buscar conteúdo"
+                  value={search}
+                  onChangeText={setSearch}
+                  placeholder="Buscar conteúdo"
+                />
+                <View style={s.row}>
+                  <Chip
+                    label="Todos os status"
+                    active={status === "all"}
+                    onPress={() => setStatus("all")}
+                  />
+                  {Object.entries(statusLabels).map(([key, label]) => (
+                    <Chip
+                      key={key}
+                      label={label}
+                      active={status === key}
+                      onPress={() => setStatus(key as PublicationStatus)}
+                    />
+                  ))}
+                </View>
+                <View style={s.row}>
+                  <Chip
+                    label="Todos os formatos"
+                    active={type === "all"}
+                    onPress={() => setType("all")}
+                  />
+                  {Object.entries(typeLabels).map(([key, label]) => (
+                    <Chip
+                      key={key}
+                      label={label}
+                      active={type === key}
+                      onPress={() => setType(key as PublicationType)}
+                    />
+                  ))}
+                </View>
+              </View>
+            )}
             {visible.length ? (
               visible.map(showItem)
             ) : (
@@ -459,18 +577,12 @@ export default function AdminScreen() {
                 onChangeText={setPeriod}
                 placeholder="2026-10"
               />
-              <Body muted>
-                Horário de São Paulo. Rascunhos com data também aparecem na
-                agenda.
-              </Body>
+              <Body muted>Horário de São Paulo (America/Sao_Paulo).</Body>
             </View>
             {!validMonth ? (
               <Empty text="Informe o mês no formato AAAA-MM." />
             ) : (
               <>
-                <Title small style={{ marginTop: 22, marginBottom: 14 }}>
-                  Agenda do mês
-                </Title>
                 {monthItems.length ? (
                   monthItems.map(showItem)
                 ) : (
@@ -479,8 +591,7 @@ export default function AdminScreen() {
                 <View style={styles.pending}>
                   <Title small>Devocionais pendentes</Title>
                   <Body muted>
-                    Datas de hoje em diante sem um devocional publicado ou
-                    agendado. Rascunhos ainda precisam de publicação.
+                    Próximos dias sem devocional publicado ou agendado.
                   </Body>
                   {missingDays.length ? (
                     <View style={s.row}>
@@ -531,6 +642,13 @@ export default function AdminScreen() {
           </>
         )}
       </ScrollView>
+      {challengeEditor && (
+        <ChallengeEditor
+          item={challengeEditor.item}
+          onClose={() => setChallengeEditor(null)}
+          onSave={saveChallenge}
+        />
+      )}
       {editor && (
         <PublicationEditor
           item={editor.item}
@@ -582,22 +700,35 @@ const styles = StyleSheet.create({
   navSelected: { backgroundColor: colors.pink },
   navText: { fontFamily: fonts.medium, color: colors.burgundy, fontSize: 17 },
   navDivider: { height: 1, backgroundColor: colors.line, marginVertical: 22 },
-  mobileNav: { gap: 12, marginBottom: 22 },
+  mobileNav: { gap: 8, marginBottom: 16 },
+  toolbar: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 8,
+  },
+  textButton: {
+    minHeight: 48,
+    minWidth: 48,
+    paddingHorizontal: 12,
+    justifyContent: "center",
+  },
   header: {
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
     gap: 18,
-    marginBottom: 26,
+    marginBottom: 16,
   },
   demo: { backgroundColor: colors.pink, padding: 14, marginBottom: 24 },
   filters: {
     gap: 14,
-    marginBottom: 24,
+    marginBottom: 16,
     borderTopWidth: 1,
     borderBottomWidth: 1,
     borderColor: colors.line,
-    paddingVertical: 24,
+    paddingVertical: 16,
   },
   contentRow: {
     flexDirection: "row",

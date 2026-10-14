@@ -88,11 +88,6 @@ export default function Event() {
           void (registered ? cancelRegistration(id) : registerEvent(id))
         }
       />
-      {isDemo && (
-        <Body muted style={{ fontSize: 14, marginTop: 15 }}>
-          Sugestão de encontro para esta apresentação.
-        </Body>
-      )}
     </Page>
   );
 }

@@ -1,18 +1,29 @@
-import { Pressable, View } from "react-native";
+import { Pressable, View, Linking } from "react-native";
+import { useState } from "react";
 import { router } from "expo-router";
-import { Page, Body, Title, Section, s, Empty } from "../../src/components/ui";
+import {
+  Page,
+  Body,
+  Title,
+  Section,
+  s,
+  Empty,
+  Button,
+} from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
 import { colors } from "../../src/theme";
+import { gymratsUrl } from "../../src/services/challengeValidation";
 import {
   ChallengeProgress,
   ChallengeStepControl,
 } from "../../src/components/ChallengeProgress";
 export default function Live() {
+  const [linkError, setLinkError] = useState("");
   const { events, challenges, challengeSteps, stepCompletions, toggleStep } =
     useEleva();
   return (
     <Page kicker="Atividades e encontros" title="Viver">
-      <Body muted>Escolha uma atividade e acompanhe o que já fez.</Body>
+      {!!linkError && <Empty text={linkError} />}
       <Section title="Desafios" />
       {!challenges.length && (
         <Empty text="Os próximos desafios vão aparecer aqui." />
@@ -28,7 +39,28 @@ export default function Live() {
           <View key={c.id} style={[s.panel, { marginBottom: 16, gap: 8 }]}>
             <Title small>{c.title}</Title>
             <Body>{c.description}</Body>
-            <ChallengeProgress completed={completed} total={steps.length} />
+            {c.gymrats_url && (
+              <Button
+                label="Abrir no GymRats"
+                onPress={() => {
+                  setLinkError("");
+                  try {
+                    const url = gymratsUrl(c.gymrats_url);
+                    if (url)
+                      void Linking.openURL(url).catch(() =>
+                        setLinkError(
+                          "Não foi possível abrir o GymRats. Tente novamente.",
+                        ),
+                      );
+                  } catch {
+                    setLinkError("O link deste desafio não está disponível.");
+                  }
+                }}
+              />
+            )}
+            {steps.length > 0 && (
+              <ChallengeProgress completed={completed} total={steps.length} />
+            )}
             <View>
               {steps.map((step) => (
                 <ChallengeStepControl

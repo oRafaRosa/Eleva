@@ -46,6 +46,7 @@ export default function RootLayout() {
               <Stack.Screen name="content/[id]" />
               <Stack.Screen name="event/[id]" />
               <Stack.Screen name="admin" />
+              <Stack.Screen name="profile-edit" />
             </Stack>
           </ElevaProvider>
         </SafeAreaView>
