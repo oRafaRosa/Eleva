@@ -39,7 +39,7 @@ export default function Welcome() {
       <View style={[styles.hero, wide && { flexDirection: "row" }]}>
         <ImageBackground
           source={require("../assets/brand/stationery.jpg")}
-          imageStyle={{ opacity: 0.13 }}
+          imageStyle={{ opacity: 0.13, width: "100%", height: "100%" }}
           style={[styles.heroCopy, wide && { flex: 1 }]}
         >
           <Title
@@ -80,7 +80,7 @@ export default function Welcome() {
         source={require("../assets/brand/floral-paper.jpg")}
         resizeMode="cover"
         style={styles.about}
-        imageStyle={{ opacity: 0.35 }}
+        imageStyle={{ opacity: 0.35, width: "100%", height: "100%" }}
       >
         <Image source={seal} accessible={false} style={styles.seal} />
         <Title small>Conheça o ELEVA</Title>
@@ -166,7 +166,13 @@ const styles = StyleSheet.create({
   },
   hero: { backgroundColor: colors.pink, overflow: "hidden", marginTop: 12 },
   heroCopy: { padding: 28, justifyContent: "center" },
-  about: { marginTop: 40, padding: 28, gap: 20, backgroundColor: "#F8EEE5" },
+  about: {
+    overflow: "hidden",
+    marginTop: 40,
+    padding: 28,
+    gap: 20,
+    backgroundColor: "#F8EEE5",
+  },
   seal: { width: 80, height: 80, marginBottom: 4 },
   pillars: { gap: 16, marginTop: 16, flexWrap: "wrap" },
   pillar: {
