@@ -1,11 +1,13 @@
-import { View, Text, StyleSheet, useWindowDimensions } from "react-native";
+import { View, StyleSheet, useWindowDimensions } from "react-native";
 import { router } from "expo-router";
-import { Page, Body, Title, Button, s } from "../src/components/ui";
-import { colors, fonts } from "../src/theme";
+import { Page, Body, Title, Button } from "../src/components/ui";
+import { colors } from "../src/theme";
 import { Illustration } from "../src/components/Illustration";
 import { MotionBlock } from "../src/components/MotionBlock";
+import { BrandLogo } from "../src/components/BrandLogo";
 export default function Welcome() {
-  const wide = useWindowDimensions().width > 640;
+  const { width } = useWindowDimensions();
+  const wide = width > 640;
   return (
     <Page showBrand={false}>
       <View style={[styles.hero, wide && { padding: 48 }]}>
@@ -17,7 +19,9 @@ export default function Welcome() {
             flexWrap: "wrap",
           }}
         >
-          <Text style={styles.wordmark}>ELEVA</Text>
+          <BrandLogo
+            width={wide ? 260 : Math.min(176, Math.max(100, width - 184))}
+          />
           <MotionBlock illustration>
             <Illustration kind="flower" size={wide ? 112 : 76} />
           </MotionBlock>
@@ -49,13 +53,6 @@ const styles = StyleSheet.create({
     paddingTop: 36,
     marginTop: 24,
     borderRadius: 3,
-  },
-  wordmark: {
-    fontFamily: fonts.serif,
-    fontSize: 78,
-    lineHeight: 85,
-    color: colors.burgundy,
-    letterSpacing: 3,
   },
   rule: {
     width: 44,

@@ -24,6 +24,7 @@ import { Publication } from "../types/domain";
 import { Illustration } from "./Illustration";
 import { MotionBlock } from "./MotionBlock";
 import { useEleva } from "../state/AppProvider";
+import { BrandLogo } from "./BrandLogo";
 export function Body({
   children,
   muted = false,
@@ -159,18 +160,19 @@ export function Page({
                 else router.replace(backHref);
               }}
             >
-              <Text
-                style={[
-                  s.logo,
-                  back && {
+              {back ? (
+                <Text
+                  style={{
                     fontFamily: fonts.medium,
                     fontSize: 17,
-                    letterSpacing: 0,
-                  },
-                ]}
-              >
-                {back ? "‹ Voltar" : "ELEVA"}
-              </Text>
+                    color: colors.burgundy,
+                  }}
+                >
+                  ‹ Voltar
+                </Text>
+              ) : (
+                <BrandLogo decorative />
+              )}
             </Pressable>
           </View>
         )}
@@ -551,12 +553,6 @@ export const s = StyleSheet.create({
     paddingBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: colors.line,
-  },
-  logo: {
-    fontFamily: fonts.serif,
-    fontSize: 32,
-    color: colors.burgundy,
-    letterSpacing: 1,
   },
   topNote: { fontFamily: fonts.sans, fontSize: 12, color: colors.muted },
   body: {

@@ -21,6 +21,7 @@ import {
 import { DateControl } from "../src/components/admin/DateControl";
 import { ChallengeEditor } from "../src/components/admin/ChallengeEditor";
 import { PublicationEditor } from "../src/components/admin/PublicationEditor";
+import { BrandLogo } from "../src/components/BrandLogo";
 import {
   typeLabels,
   statusLabels,
@@ -197,7 +198,7 @@ export default function AdminScreen() {
   if (!allowed || user?.role !== "admin")
     return (
       <ScrollView style={styles.page} contentContainerStyle={styles.gate}>
-        <Text style={styles.logo}>ELEVA</Text>
+        <BrandLogo width={128} />
         <Title>Painel administrativo</Title>
         <Body>
           Entre com uma conta autorizada pela equipe para publicar e organizar
@@ -324,7 +325,7 @@ export default function AdminScreen() {
   );
   const navigation = (
     <>
-      <Text style={styles.logo}>ELEVA</Text>
+      <BrandLogo width={128} />
       <Body muted style={{ marginBottom: 20 }}>
         Administração
       </Body>
@@ -731,12 +732,6 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     padding: 24,
     paddingBottom: 60,
-  },
-  logo: {
-    fontFamily: fonts.serif,
-    color: colors.burgundy,
-    fontSize: 37,
-    letterSpacing: 1,
   },
   navItem: {
     minHeight: 48,

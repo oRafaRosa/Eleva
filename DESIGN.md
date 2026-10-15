@@ -20,6 +20,10 @@ Capas nas listagens usam miniatura de 84x84 ao lado do título, resumo até duas
 
 Reservar espaço de capas enquanto carregam e manter a área estável em falhas. Admin e leitura compartilham a estrutura do corpo da publicação. Comentários têm rota própria, com retorno à comunidade. Períodos de desafios são visíveis; atividades abrem sob demanda. Abas usam desenhos distintos e rótulos, com espaço para o inset inferior.
 
+## Logotipo
+
+A assinatura visual oficial está em `assets/brand`, com versões bordô, rosa, marfim e branca, em PNG transparente e SVG com imagem incorporada. A base vem da capa institucional, preservando o desenho das letras. Usar `BrandLogo` nos cabeçalhos e assinaturas, sem distorcer a proporção. Bordô nos fundos claros; marfim, branco ou rosa no bordô. Rótulos de navegação e frases que mencionam ELEVA continuam como texto. As versões de cor seguem as variáveis conferidas no Figma em 15/10/2026.
+
 ## Escrita
 
 Português BR natural, direto e acolhedor. Sem travessões, slogans genéricos, promessas de cura, cobrança por ausência ou superlativos sem prova. Botões explicam a ação: Ler devocional, Salvar, Confirmar presença, Agendar publicação. Confirmações dependem da resposta real do serviço.
