@@ -8,7 +8,7 @@
     "userInterfaceStyle": "light",
     "web": {
       "bundler": "metro",
-      "favicon": "./assets/brand/favicon.png",
+      "favicon": "./public/icons/eleva-seal-512-v2.png",
       "output": "single",
       "name": "ELEVA the club",
       "shortName": "ELEVA"

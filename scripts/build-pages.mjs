@@ -12,8 +12,8 @@ const build = spawnSync(
 );
 if (build.status !== 0) process.exit(build.status ?? 1);
 const html = readFileSync("dist/index.html", "utf8").replace(
-  'href="/apple-touch-icon.png"',
-  `href="${basePath}/apple-touch-icon.png"`,
+  /(href=")\/(icons\/[^" ]+|site\.webmanifest)/g,
+  `$1${basePath}/$2`,
 );
 writeFileSync("dist/index.html", html);
 if (!html.includes(`${basePath}/_expo/`)) {
@@ -21,7 +21,7 @@ if (!html.includes(`${basePath}/_expo/`)) {
     "O build não contém os caminhos esperados para GitHub Pages.",
   );
 }
-if (!html.includes(`href="${basePath}/apple-touch-icon.png"`)) {
+if (!html.includes(`href="${basePath}/icons/eleva-seal-180-v2.png"`)) {
   throw new Error("O ícone de Tela de Início não está configurado no HTML.");
 }
 const touchIcon = readFileSync("dist/apple-touch-icon.png");
@@ -30,6 +30,21 @@ if (touchIcon.readUInt32BE(16) !== 180 || touchIcon.readUInt32BE(20) !== 180) {
 }
 // GitHub Pages does not provide SPA rewrites. Deep links load the same app.
 copyFileSync("dist/index.html", "dist/404.html");
+// Serve the app's main destinations with HTTP 200, including when saved to Home Screen.
+for (const route of [
+  "home",
+  "learn",
+  "live",
+  "connect",
+  "profile",
+  "login",
+  "admin",
+  "profile-edit",
+]) {
+  mkdirSync(`dist/${route}`, { recursive: true });
+  writeFileSync(`dist/${route}/index.html`, html);
+}
+
 mkdirSync("dist/convite", { recursive: true });
 const invitationHtml = html
   .replace(
