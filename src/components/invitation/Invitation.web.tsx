@@ -133,7 +133,6 @@ function ReadableInvitation({ onReplay }: { onReplay?: () => void }) {
       <style>{invitationStyles}</style>
       <Header />
       <div className="invite-static-wrap">
-        <p className="invite-date">{invitation.date}</p>
         <Letter />
         <Contact />
         {onReplay && (
@@ -231,12 +230,6 @@ function ImmersiveInvitation({ onRead }: { onRead: () => void }) {
       <section className="invite-story" ref={story}>
         <div className="invite-pinned">
           <Header onRead={onRead} />
-          <motion.p
-            className="invite-date invite-date-floating"
-            style={{ opacity: hintOpacity }}
-          >
-            {invitation.date}
-          </motion.p>
           <div className="invite-scene">
             <div className="invite-anchor">
               <motion.div
@@ -279,9 +272,7 @@ function ImmersiveInvitation({ onRead }: { onRead: () => void }) {
                   }}
                   aria-hidden="true"
                 >
-                  <div className="invite-flap-front invite-paper-grain">
-                    <span className="invite-open-script">abra isso</span>
-                  </div>
+                  <div className="invite-flap-front invite-paper-grain" />
                   <div className="invite-flap-back" />
                 </motion.div>
                 <motion.div
