@@ -280,11 +280,7 @@ function ImmersiveInvitation({ onRead }: { onRead: () => void }) {
                   aria-hidden="true"
                 >
                   <div className="invite-flap-front invite-paper-grain">
-                    <Artwork
-                      source={closedArt}
-                      crop="160 450 390 115"
-                      className="invite-open-script"
-                    />
+                    <span className="invite-open-script">abra isso</span>
                   </div>
                   <div className="invite-flap-back" />
                 </motion.div>
@@ -335,10 +331,9 @@ export default function Invitation() {
   const reduced = useReducedMotion();
   const [readable, setReadable] = useState(false);
   useEffect(() => {
-    const previous = document.title;
     document.title = "Um convite para você | ELEVA · 24.10";
     return () => {
-      document.title = previous;
+      document.title = "ELEVA the club";
     };
   }, []);
   return reduced || readable ? (

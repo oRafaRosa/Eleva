@@ -21,7 +21,7 @@ export default function Invitation() {
         </Body>
         <Body style={s.copy}>E o lançamento oficial do</Body>
         <View style={s.signature}>
-          <BrandLogo width={150} />
+          <BrandLogo width={150} club={false} />
           <Text style={s.club}>the club</Text>
         </View>
         <Body style={s.copy}>{invitation.closing}</Body>

@@ -71,7 +71,7 @@ export default function Welcome() {
           resizeMode="cover"
           style={
             wide
-              ? { width: "44%", minHeight: 530 }
+              ? { width: "44%", height: 560 }
               : { width: "100%", aspectRatio: 2 / 3 }
           }
         />
