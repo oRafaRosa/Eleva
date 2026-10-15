@@ -29,11 +29,20 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.ivory,
           borderTopColor: colors.line,
-          height: Math.max(64, Math.ceil(58 * fontScale)) + insets.bottom,
+          height:
+            Math.max(72, Math.ceil(64 * fontScale)) +
+            Math.max(8, insets.bottom),
           paddingTop: 9,
           paddingBottom: Math.max(8, insets.bottom),
         },
-        tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 12 },
+        tabBarLabelPosition: "below-icon",
+        tabBarItemStyle: { minWidth: 0, paddingHorizontal: 0 },
+        tabBarLabelStyle: {
+          fontFamily: fonts.medium,
+          fontSize: 12,
+          lineHeight: 18,
+          textAlign: "center",
+        },
       }}
     >
       {[

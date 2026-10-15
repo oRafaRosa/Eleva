@@ -17,6 +17,7 @@ import Animated, {
   useReducedMotion,
   cubicBezier,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, type Href } from "expo-router";
 import { colors, fonts, typeLabels, pillarLabels } from "../theme";
 import { resolveContentAsset } from "../services/supabase";
@@ -83,7 +84,7 @@ export function Button({
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
-      style={{ alignSelf: "stretch" }}
+      style={{ alignSelf: "stretch", minWidth: 0 }}
     >
       <Animated.View
         style={[
@@ -129,6 +130,7 @@ export function Page({
   backHref?: Href;
   showBrand?: boolean;
 }) {
+  const insets = useSafeAreaInsets();
   return (
     <KeyboardAvoidingView
       style={s.page}
@@ -137,7 +139,10 @@ export function Page({
     >
       <ScrollView
         style={s.page}
-        contentContainerStyle={s.content}
+        contentContainerStyle={[
+          s.content,
+          { paddingBottom: 30 + insets.bottom },
+        ]}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
@@ -576,7 +581,14 @@ export const s = StyleSheet.create({
     borderColor: colors.burgundy,
     alignItems: "center",
   },
-  buttonText: { fontFamily: fonts.medium, fontSize: 17, color: colors.white },
+  buttonText: {
+    fontFamily: fonts.medium,
+    fontSize: 17,
+    lineHeight: 24,
+    textAlign: "center",
+    flexShrink: 1,
+    color: colors.white,
+  },
   section: {
     flexDirection: "row",
     alignItems: "center",

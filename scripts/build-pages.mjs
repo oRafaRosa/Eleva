@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 
 const basePath = "/Eleva";
 const build = spawnSync(
@@ -19,6 +19,17 @@ if (!html.includes(`${basePath}/_expo/`)) {
 }
 // GitHub Pages does not provide SPA rewrites. Deep links load the same app.
 copyFileSync("dist/index.html", "dist/404.html");
+mkdirSync("dist/convite", { recursive: true });
+const invitationHtml = html
+  .replace(
+    /<title>.*?<\/title>/,
+    "<title>Um convite para você | ELEVA · 24.10</title>",
+  )
+  .replace(
+    "</head>",
+    '<meta name="description" content="24 de outubro. Um convite para o lançamento da ELEVA The Club."/><meta property="og:title" content="Um convite para você | ELEVA · 24.10"/><meta property="og:description" content="24 de outubro. Abra o convite para o lançamento da ELEVA The Club."/><meta property="og:type" content="website"/><meta property="og:url" content="https://orafarosa.github.io/Eleva/convite/"/></head>',
+  );
+writeFileSync("dist/convite/index.html", invitationHtml);
 writeFileSync("dist/.nojekyll", "");
 console.log(
   "Build GitHub Pages pronto: /Eleva, fallback 404 e assets verificados.",

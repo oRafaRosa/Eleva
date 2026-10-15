@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { Allura_400Regular } from "@expo-google-fonts/allura/400Regular";
 import { useFonts } from "expo-font";
 import { CormorantGaramond_600SemiBold } from "@expo-google-fonts/cormorant-garamond/600SemiBold";
 import { SourceSans3_400Regular } from "@expo-google-fonts/source-sans-3/400Regular";
@@ -15,6 +16,7 @@ import { colors } from "../src/theme";
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
+    Allura_400Regular,
     CormorantGaramond_600SemiBold,
     SourceSans3_400Regular,
     SourceSans3_600SemiBold,

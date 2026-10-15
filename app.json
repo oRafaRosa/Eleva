@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ELEVA",
+    "name": "ELEVA the club",
     "slug": "eleva",
     "version": "0.1.0",
     "scheme": "eleva",
@@ -8,8 +8,9 @@
     "userInterfaceStyle": "light",
     "web": {
       "bundler": "metro",
+      "favicon": "./assets/brand/favicon.png",
       "output": "single",
-      "name": "ELEVA",
+      "name": "ELEVA the club",
       "shortName": "ELEVA"
     },
     "ios": {
