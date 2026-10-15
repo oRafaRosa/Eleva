@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Platform,
   Image,
+  Pressable,
 } from "react-native";
 import Animated, {
   Easing,
@@ -18,6 +19,9 @@ import {
   pickPublicationCover,
   type PreparedCover,
 } from "../../services/publicationCover";
+import { readableValue } from "../../utils/publicationDetails";
+import { PublicationBody } from "../PublicationBody";
+import { DateControl } from "./DateControl";
 import { ContentCover } from "../ui";
 import { colors, fonts } from "../../theme";
 import type {
@@ -61,6 +65,9 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
   const initialSchedule = scheduleFields(item?.scheduled_at || null);
   const [day, setDay] = useState(initialSchedule.day);
   const [time, setTime] = useState(initialSchedule.time);
+  const [formatOpen, setFormatOpen] = useState(false);
+  const [extrasOpen, setExtrasOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [preview, setPreview] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [discard, setDiscard] = useState(false);
@@ -225,6 +232,12 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
     }
   }
   const requestPublish = (next: "published" | "scheduled") => {
+    if (next === "scheduled" && !scheduleOpen) {
+      setScheduleOpen(true);
+      setPreview(false);
+      setIntent(null);
+      return;
+    }
     try {
       validateDraft(makeDraft(next));
       setError("");
@@ -237,7 +250,7 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
     <Field
       key={key}
       label={label}
-      value={String(details[key] || "")}
+      value={readableValue(details[key])}
       onChangeText={(v) => setDetail(key, v)}
       multiline={multiline}
       style={multiline ? styles.multiline : undefined}
@@ -272,6 +285,8 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
           </View>
           <ScrollView
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            automaticallyAdjustKeyboardInsets
             contentContainerStyle={styles.form}
           >
             {discard ? (
@@ -298,54 +313,27 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                         accessibilityLabel="Imagem da publicação"
                         style={{
                           width: "100%",
-                          height: 180,
+                          height: 240,
                           borderRadius: 4,
                           marginBottom: 16,
                         }}
-                        resizeMode="cover"
+                        resizeMode="contain"
                       />
                     ) : coverPath ? (
-                      <ContentCover path={coverPath} variant="banner" />
+                      <ContentCover path={coverPath} variant="detail" />
                     ) : null}
                     <Body muted>
                       {typeLabels[type]} / {pillarLabels[pillar]}
                     </Body>
-                    {type === "devotional" && <Body muted>{reference}</Body>}
+                    {type === "devotional" && (
+                      <Body muted>
+                        {reference.split("-").reverse().join("/")}
+                      </Body>
+                    )}
                     <Title style={{ marginVertical: 18 }}>
                       {title || "Título do conteúdo"}
                     </Title>
-                    {!!summary && (
-                      <Body style={{ marginBottom: 22 }}>{summary}</Body>
-                    )}
-                    {type === "devotional" && !!details.verse && (
-                      <Body style={styles.verse}>{String(details.verse)}</Body>
-                    )}
-                    <Body style={styles.reading}>
-                      {body || "O conteúdo aparecerá aqui."}
-                    </Body>
-                    {Object.entries(details)
-                      .filter(([key, value]) => key !== "verse" && !!value)
-                      .map(([key, value]) => (
-                        <View key={key} style={{ marginTop: 22 }}>
-                          <Text style={styles.label}>
-                            {(
-                              {
-                                application: "Para hoje",
-                                prayer: "Oração",
-                                duration_minutes: "Duração em minutos",
-                                level: "Nível",
-                                equipment: "Equipamentos",
-                                exercises: "Exercícios",
-                                instructions: "Orientações",
-                                author: "Autoria",
-                                objective: "Objetivo",
-                                professional: "Profissional responsável",
-                              } as Record<string, string>
-                            )[key] || key}
-                          </Text>
-                          <Body style={styles.reading}>{String(value)}</Body>
-                        </View>
-                      ))}
+                    <PublicationBody item={{ type, body, details, summary }} />
                     {!!media && (
                       <Body muted style={{ marginTop: 24 }}>
                         Mídia: {media}
@@ -354,39 +342,57 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                   </View>
                 ) : (
                   <>
-                    <Text style={styles.label}>Formato</Text>
-                    <View style={s.row}>
-                      {Object.entries(typeLabels).map(([key, label]) => (
-                        <Chip
-                          key={key}
-                          label={label}
-                          active={type === key}
-                          onPress={() => {
-                            if (busy || type === key) return;
-                            setType(key as PublicationType);
-                            setDetails({});
-                            setDirty(true);
-                            setIntent(null);
-                          }}
-                        />
-                      ))}
-                    </View>
-                    <Text style={styles.label}>Pilar</Text>
-                    <View style={s.row}>
-                      {Object.entries(pillarLabels).map(([key, label]) => (
-                        <Chip
-                          key={key}
-                          label={label}
-                          active={pillar === key}
-                          onPress={() => {
-                            if (busy) return;
-                            setPillar(key as Pillar);
-                            setDirty(true);
-                            setIntent(null);
-                          }}
-                        />
-                      ))}
-                    </View>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded: formatOpen }}
+                      disabled={busy || pickingCover}
+                      onPress={() => setFormatOpen((v) => !v)}
+                      style={styles.disclosure}
+                    >
+                      <Body>
+                        {typeLabels[type]} / {pillarLabels[pillar]}
+                      </Body>
+                      <Text style={styles.disclosureText}>
+                        {formatOpen ? "Recolher" : "Alterar"}
+                      </Text>
+                    </Pressable>
+                    {formatOpen && (
+                      <View style={{ gap: 12 }}>
+                        <Text style={styles.label}>Formato</Text>
+                        <View style={s.row}>
+                          {Object.entries(typeLabels).map(([key, label]) => (
+                            <Chip
+                              key={key}
+                              label={label}
+                              active={type === key}
+                              onPress={() => {
+                                if (busy || type === key) return;
+                                setType(key as PublicationType);
+                                setDetails({});
+                                setDirty(true);
+                                setIntent(null);
+                              }}
+                            />
+                          ))}
+                        </View>
+                        <Text style={styles.label}>Pilar</Text>
+                        <View style={s.row}>
+                          {Object.entries(pillarLabels).map(([key, label]) => (
+                            <Chip
+                              key={key}
+                              label={label}
+                              active={pillar === key}
+                              onPress={() => {
+                                if (busy) return;
+                                setPillar(key as Pillar);
+                                setDirty(true);
+                                setIntent(null);
+                              }}
+                            />
+                          ))}
+                        </View>
+                      </View>
+                    )}
                     <Field
                       autoFocus
                       label="Título"
@@ -395,69 +401,6 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                       editable={!busy}
                       maxLength={180}
                     />
-                    <View style={{ gap: 10 }}>
-                      {coverUpload ? (
-                        <Image
-                          source={{ uri: coverUpload.preview }}
-                          accessibilityLabel="Imagem selecionada"
-                          style={{
-                            width: "100%",
-                            height: 150,
-                            borderRadius: 4,
-                          }}
-                          resizeMode="contain"
-                        />
-                      ) : coverPath ? (
-                        <ContentCover path={coverPath} variant="banner" />
-                      ) : null}
-                      <View style={s.row}>
-                        <Button
-                          label={
-                            pickingCover
-                              ? "Preparando imagem…"
-                              : coverUpload || coverPath
-                                ? "Trocar imagem"
-                                : "Adicionar imagem"
-                          }
-                          secondary
-                          disabled={busy || pickingCover}
-                          onPress={() => void chooseCover()}
-                        />
-                        {(coverUpload || coverPath) && (
-                          <Button
-                            label="Remover imagem"
-                            secondary
-                            disabled={busy || pickingCover}
-                            onPress={() => {
-                              setCoverUpload(null);
-                              setCoverPath(null);
-                              setDirty(true);
-                              setIntent(null);
-                            }}
-                          />
-                        )}
-                      </View>
-                    </View>
-                    <Field
-                      label="Resumo (opcional)"
-                      value={summary}
-                      onChangeText={edit(setSummary)}
-                      editable={!busy}
-                      multiline
-                      style={styles.multiline}
-                    />
-                    {type === "devotional" && (
-                      <>
-                        <Field
-                          label="Dia do devocional (AAAA-MM-DD)"
-                          value={reference}
-                          onChangeText={edit(setReference)}
-                          editable={!busy}
-                          placeholder="2026-10-14"
-                        />
-                        {detailField("Versículo e referência", "verse")}
-                      </>
-                    )}
                     <Field
                       label={type === "devotional" ? "Reflexão" : "Conteúdo"}
                       value={body}
@@ -466,6 +409,17 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                       multiline
                       style={[styles.multiline, { minHeight: 190 }]}
                     />
+                    {type === "devotional" && (
+                      <>
+                        <DateControl
+                          label="Dia do devocional"
+                          value={reference}
+                          onChangeText={edit(setReference)}
+                          disabled={busy}
+                        />
+                        {detailField("Versículo e referência", "verse")}
+                      </>
+                    )}
                     {type === "devotional" && (
                       <>
                         {detailField("Aplicação para o dia", "application")}
@@ -499,33 +453,122 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                     )}
                     {type === "motivation" &&
                       detailField("Autoria (opcional)", "author", false)}
-                    <Field
-                      label="Link da mídia (opcional, https://)"
-                      value={media}
-                      onChangeText={edit(setMedia)}
-                      autoCapitalize="none"
-                      editable={!busy}
-                    />
-                    <View style={styles.schedule}>
-                      <Title small>Agendamento</Title>
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded: extrasOpen }}
+                      disabled={busy || pickingCover}
+                      onPress={() => setExtrasOpen((v) => !v)}
+                      style={styles.disclosure}
+                    >
+                      <Text style={styles.label}>Imagem e outros campos</Text>
+                      <Text style={styles.disclosureText}>
+                        {extrasOpen ? "Recolher" : "Abrir"}
+                      </Text>
+                    </Pressable>
+                    {!extrasOpen && (coverUpload || coverPath) && (
+                      <Body muted>Imagem adicionada.</Body>
+                    )}
+                    {extrasOpen && (
+                      <View style={{ gap: 14 }}>
+                        <View style={{ gap: 10 }}>
+                          {coverUpload ? (
+                            <Image
+                              source={{ uri: coverUpload.preview }}
+                              accessibilityLabel="Imagem selecionada"
+                              style={{
+                                width: "100%",
+                                height: 150,
+                                borderRadius: 4,
+                              }}
+                              resizeMode="contain"
+                            />
+                          ) : coverPath ? (
+                            <ContentCover path={coverPath} variant="banner" />
+                          ) : null}
+                          <View style={s.row}>
+                            <Button
+                              label={
+                                pickingCover
+                                  ? "Preparando imagem…"
+                                  : coverUpload || coverPath
+                                    ? "Trocar imagem"
+                                    : "Adicionar imagem"
+                              }
+                              secondary
+                              disabled={busy || pickingCover}
+                              onPress={() => void chooseCover()}
+                            />
+                            {(coverUpload || coverPath) && (
+                              <Button
+                                label="Remover imagem"
+                                secondary
+                                disabled={busy || pickingCover}
+                                onPress={() => {
+                                  setCoverUpload(null);
+                                  setCoverPath(null);
+                                  setDirty(true);
+                                  setIntent(null);
+                                }}
+                              />
+                            )}
+                          </View>
+                        </View>
+                        <Field
+                          label="Resumo (opcional)"
+                          value={summary}
+                          onChangeText={edit(setSummary)}
+                          editable={!busy}
+                          multiline
+                          style={styles.multiline}
+                        />
+                        <Field
+                          label="Link da mídia (opcional, https://)"
+                          value={media}
+                          onChangeText={edit(setMedia)}
+                          autoCapitalize="none"
+                          editable={!busy}
+                        />
+                      </View>
+                    )}
+                    {item?.scheduled_at && (
                       <Body muted>
-                        Horário de São Paulo (America/Sao_Paulo).
+                        Agendamento atual: {displayTime(item.scheduled_at)} (São
+                        Paulo).
                       </Body>
-                      <Field
-                        label="Data de publicação (AAAA-MM-DD)"
-                        value={day}
-                        onChangeText={edit(setDay)}
-                        editable={!busy}
-                        placeholder="2026-10-14"
-                      />
-                      <Field
-                        label="Horário (HH:MM)"
-                        value={time}
-                        onChangeText={edit(setTime)}
-                        editable={!busy}
-                        placeholder="07:00"
-                      />
-                    </View>
+                    )}
+                    {scheduleOpen && (
+                      <View style={styles.schedule}>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityState={{ expanded: true }}
+                          disabled={busy || pickingCover}
+                          onPress={() => {
+                            setScheduleOpen(false);
+                            setIntent(null);
+                          }}
+                          style={styles.disclosure}
+                        >
+                          <Text style={styles.label}>Agendamento</Text>
+                          <Text style={styles.disclosureText}>Recolher</Text>
+                        </Pressable>
+                        <Body muted>
+                          Horário de São Paulo (America/Sao_Paulo).
+                        </Body>
+                        <DateControl
+                          label="Data de publicação"
+                          value={day}
+                          onChangeText={edit(setDay)}
+                          disabled={busy}
+                        />
+                        <DateControl
+                          kind="time"
+                          label="Horário"
+                          value={time}
+                          onChangeText={edit(setTime)}
+                          disabled={busy}
+                        />
+                      </View>
+                    )}
                   </>
                 )}
                 {!!error && (
@@ -580,7 +623,7 @@ export function PublicationEditor({ item, onClose, onSave, demo }: Props) {
                     onPress={() => void save("draft")}
                   />
                   <Button
-                    label="Agendar"
+                    label={scheduleOpen ? "Revisar agendamento" : "Agendar"}
                     disabled={busy || pickingCover}
                     onPress={() => requestPublish("scheduled")}
                   />
@@ -631,6 +674,19 @@ const styles = StyleSheet.create({
     borderColor: colors.line,
   },
   form: { padding: 20, gap: 14 },
+  disclosure: {
+    minHeight: 48,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  disclosureText: {
+    fontFamily: fonts.medium,
+    color: colors.burgundy,
+    fontSize: 15,
+  },
   label: { fontFamily: fonts.medium, color: colors.ink, fontSize: 16 },
   multiline: { minHeight: 90, textAlignVertical: "top" },
   schedule: {
@@ -645,14 +701,6 @@ const styles = StyleSheet.create({
     maxWidth: 420,
     width: "100%",
     alignSelf: "center",
-  },
-  reading: { fontSize: 18, lineHeight: 29 },
-  verse: {
-    fontFamily: fonts.serif,
-    fontSize: 25,
-    lineHeight: 31,
-    color: colors.burgundy,
-    paddingBottom: 24,
   },
   error: {
     color: "#8F1D30",

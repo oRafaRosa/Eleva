@@ -19,7 +19,7 @@ npm ci
 npm run web
 ```
 
-Na página inicial, escolha Conhecer a plataforma. No login, escolha Marina para explorar a área da integrante ou Rebeca para entrar no painel administrativo. As duas contas de exemplo não exigem senha.
+Na página inicial, escolha Entrar na ELEVA. No login, escolha Jeice para explorar a área da integrante ou Rebeca para entrar no painel administrativo. As duas contas de exemplo não exigem senha.
 
 ```bash
 npm run typecheck
@@ -56,6 +56,6 @@ A publicação pelo Pages está configurada em `.github/workflows/pages.yml`. `n
 
 ## Comunidade e contas de exemplo
 
-A aba Conectar permite criar conversas, responder, denunciar e remover mensagens próprias. Rebeca pode moderar. Na demonstração, as conversas ficam no mesmo navegador; alternar contas permite testar as duas identidades. Compartilhamento entre dispositivos exige aplicar a migração do fórum no Supabase configurado. Marina e Rebeca têm favoritos, progresso e inscrições próprios.
+A aba Conectar permite criar publicações, curtir, comentar, denunciar e remover mensagens próprias. Comentários têm rota própria. Rebeca pode moderar. Na demonstração, as conversas ficam no mesmo navegador; alternar contas permite testar as duas identidades. Compartilhamento entre dispositivos exige aplicar a migração do fórum no Supabase configurado. Jeice e Rebeca têm favoritos, progresso e inscrições próprios. A chave interna da integrante permanece estável para preservar os dados já salvos.
 
 As ilustrações leves são vetores do próprio app. Motion usa Reanimated, com entrada discreta, feedback de toque e respeito à redução de movimento. A saudação da página inicial usa Source Sans 3 Bold.

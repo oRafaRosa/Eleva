@@ -1,17 +1,18 @@
-import { View, Linking } from "react-native";
+import { useState } from "react";
+import { View, Linking, Pressable, Text } from "react-native";
 import { useLocalSearchParams, Redirect } from "expo-router";
 import {
   Page,
   Body,
-  Title,
   Button,
   Empty,
   Loading,
-  s,
   ContentCover,
+  ErrorState,
 } from "../../src/components/ui";
+import { PublicationBody } from "../../src/components/PublicationBody";
 import { useEleva } from "../../src/state/AppProvider";
-import { typeLabels, pillarLabels, colors } from "../../src/theme";
+import { typeLabels, pillarLabels, colors, fonts } from "../../src/theme";
 export default function Content() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
@@ -21,102 +22,139 @@ export default function Content() {
     favorites,
     completions,
     loading,
+    actionBusy,
+    authStatus,
+    error,
+    refresh,
     toggleFavorite,
     toggleCompletion,
   } = useEleva();
+  const [busy, setBusy] = useState(false);
+  const [mediaError, setMediaError] = useState("");
+  const item = publications.find((p) => p.id === id);
   if (!sessionReady || (loading && !user))
     return (
       <Page back>
         <Loading />
       </Page>
     );
+  if (!user && error && (authStatus === "unknown" || authStatus === "verified"))
+    return (
+      <Page back title="Não foi possível abrir">
+        <ErrorState text={error} onRetry={refresh} />
+      </Page>
+    );
   if (!user) return <Redirect href="/login" />;
-  const p = publications.find((p) => p.id === id);
-  if (loading && !p)
+  if (loading && !item)
     return (
       <Page back>
         <Loading />
       </Page>
     );
-  if (!p)
+  if (error && !item)
+    return (
+      <Page back title="Não foi possível abrir">
+        <ErrorState text={error} onRetry={refresh} />
+      </Page>
+    );
+  if (!item)
     return (
       <Page back title="Conteúdo indisponível">
         <Empty text="Este conteúdo ainda não está publicado ou foi removido." />
       </Page>
     );
-  const verse = typeof p.details.verse === "string" ? p.details.verse : null;
+  async function favorite() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await toggleFavorite(id);
+    } catch {
+      /* The provider shows the action failure. */
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function openMedia() {
+    try {
+      setMediaError("");
+      if (!item?.media_url || !/^https:\/\//i.test(item.media_url))
+        throw new Error("Este link não está disponível.");
+      await Linking.openURL(item.media_url);
+    } catch {
+      setMediaError("Não foi possível abrir o link. Tente novamente.");
+    }
+  }
   return (
     <Page
       back
-      kicker={`${typeLabels[p.type]} / ${pillarLabels[p.pillar]}`}
-      title={p.title}
+      kicker={`${typeLabels[item.type]} / ${pillarLabels[item.pillar]}`}
+      title={item.title}
     >
-      {p.cover_path && <ContentCover path={p.cover_path} variant="detail" />}
-      <Body muted style={{ marginBottom: 28 }}>
-        {p.summary}
-      </Body>
-      {verse && (
-        <View
-          style={[
-            s.panel,
-            { backgroundColor: colors.pink, marginBottom: 28, borderWidth: 0 },
-          ]}
+      {!!error && <ErrorState text={error} onRetry={refresh} />}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={
+          favorites.includes(id) ? "Remover dos salvos" : "Salvar para depois"
+        }
+        accessibilityState={{
+          selected: favorites.includes(id),
+          disabled: busy || actionBusy,
+        }}
+        disabled={busy || actionBusy}
+        onPress={() => void favorite()}
+        style={({ pressed }) => ({
+          alignSelf: "flex-start",
+          minHeight: 48,
+          justifyContent: "center",
+          paddingHorizontal: 14,
+          marginBottom: 16,
+          borderWidth: 1,
+          borderColor: colors.muted,
+          borderRadius: 4,
+          backgroundColor: pressed ? colors.pink : "transparent",
+        })}
+      >
+        <Text
+          style={{
+            fontFamily: fonts.medium,
+            fontSize: 16,
+            color: colors.burgundy,
+          }}
         >
-          <Title small>{verse}</Title>
-        </View>
+          {favorites.includes(id) ? "Salvo" : "Salvar"}
+        </Text>
+      </Pressable>
+      {item.cover_path && (
+        <ContentCover path={item.cover_path} variant="detail" />
       )}
-      {p.body.split("\n\n").map((text, i) => (
-        <Body
-          key={i}
-          style={{ fontSize: 19, lineHeight: 30, marginBottom: 20 }}
-        >
-          {text}
-        </Body>
-      ))}
-      {Array.isArray(p.details.exercises) &&
-        p.details.exercises.map((exercise: any, i: number) => (
-          <View key={i} style={[s.panel, { marginVertical: 8 }]}>
-            <Title small>
-              {typeof exercise === "string" ? exercise : exercise.name}
-            </Title>
-            {typeof exercise === "object" && (
-              <Body>{exercise.description || exercise.reps || ""}</Body>
-            )}
-          </View>
-        ))}
-      {p.media_url && (
-        <View style={{ marginTop: 12 }}>
+      <PublicationBody item={item} />
+      {item.media_url && (
+        <View style={{ marginTop: 20 }}>
           <Button
             label="Abrir vídeo ou material"
-            onPress={() => void Linking.openURL(p.media_url!)}
+            onPress={() => void openMedia()}
           />
         </View>
       )}
+      {!!mediaError && (
+        <ErrorState text={mediaError} onRetry={() => void openMedia()} />
+      )}
       <View
         style={{
-          gap: 12,
-          marginTop: 28,
-          paddingTop: 25,
+          marginTop: 32,
+          paddingTop: 24,
           borderTopWidth: 1,
           borderTopColor: colors.line,
         }}
       >
         <Button
           label={
-            favorites.includes(id)
-              ? "Salvo. Remover dos favoritos"
-              : "Salvar para depois"
-          }
-          secondary
-          onPress={() => void toggleFavorite(id)}
-        />
-        <Button
-          label={
             completions.includes(id)
               ? "Concluído. Desfazer marcação"
               : "Marcar como concluído"
           }
-          onPress={() => void toggleCompletion(id)}
+          disabled={actionBusy}
+          onPress={() => void toggleCompletion(id).catch(() => {})}
         />
       </View>
     </Page>

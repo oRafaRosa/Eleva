@@ -18,6 +18,7 @@ import {
   Loading,
   s,
 } from "../src/components/ui";
+import { DateControl } from "../src/components/admin/DateControl";
 import { ChallengeEditor } from "../src/components/admin/ChallengeEditor";
 import { PublicationEditor } from "../src/components/admin/PublicationEditor";
 import {
@@ -56,6 +57,7 @@ export default function AdminScreen() {
   const [type, setType] = useState<PublicationType | "all">("all");
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [pendingOpen, setPendingOpen] = useState(false);
   const [moreActions, setMoreActions] = useState<string | null>(null);
   const hasFilters = search.length > 0 || status !== "all" || type !== "all";
   const [period, setPeriod] = useState(localDate().slice(0, 7));
@@ -368,40 +370,60 @@ export default function AdminScreen() {
       >
         {!wide && (
           <View style={styles.mobileNav}>
-            <Text style={styles.logo}>ELEVA</Text>
-            <View style={s.row}>
-              <Chip
-                label="Conteúdos"
-                active={section === "content"}
-                onPress={() => setSection("content")}
-              />
-              <Chip
-                label="Calendário"
-                active={section === "calendar"}
-                onPress={() => setSection("calendar")}
-              />
-              <Chip
-                label="Desafios"
-                active={section === "challenges"}
-                onPress={() => setSection("challenges")}
-              />
-              <Chip
-                label="Plataforma"
+            <View
+              style={{
+                flexDirection: "row",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 8,
+              }}
+            >
+              <Text style={styles.mobileTitle}>Administração</Text>
+              <Pressable
+                accessibilityRole="button"
                 onPress={() => router.push("/(tabs)/home")}
-              />
+                style={styles.textButton}
+              >
+                <Text style={styles.platformLink}>Ver plataforma</Text>
+              </Pressable>
+            </View>
+            <View style={styles.mobileTabs}>
+              {(
+                [
+                  { key: "content", label: "Conteúdos" },
+                  { key: "calendar", label: "Calendário" },
+                  { key: "challenges", label: "Desafios" },
+                ] as const
+              ).map((tab) => (
+                <Pressable
+                  key={tab.key}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: section === tab.key }}
+                  onPress={() => setSection(tab.key)}
+                  style={[
+                    styles.mobileTab,
+                    section === tab.key && styles.mobileTabActive,
+                  ]}
+                >
+                  <Text style={styles.mobileTabText}>{tab.label}</Text>
+                </Pressable>
+              ))}
             </View>
           </View>
         )}
         <View style={styles.header}>
-          <View style={{ flex: 1, minWidth: 200 }}>
-            <Title>
-              {section === "content"
-                ? "Conteúdos"
-                : section === "challenges"
-                  ? "Desafios"
-                  : "Calendário editorial"}
-            </Title>
-          </View>
+          {wide && (
+            <View style={{ flex: 1, minWidth: 200 }}>
+              <Title>
+                {section === "content"
+                  ? "Conteúdos"
+                  : section === "challenges"
+                    ? "Desafios"
+                    : "Calendário editorial"}
+              </Title>
+            </View>
+          )}
           <Button
             label={section === "challenges" ? "Novo desafio" : "Novo conteúdo"}
             onPress={() => {
@@ -522,6 +544,17 @@ export default function AdminScreen() {
                 </Pressable>
               )}
             </View>
+            {hasFilters && (
+              <Body muted style={{ fontSize: 15, marginBottom: 12 }}>
+                {[
+                  search ? `Busca: “${search}”` : null,
+                  status !== "all" ? statusLabels[status] : null,
+                  type !== "all" ? typeLabels[type] : null,
+                ]
+                  .filter(Boolean)
+                  .join(" / ")}
+              </Body>
+            )}
             {filtersOpen && (
               <View style={styles.filters}>
                 <Field
@@ -571,16 +604,16 @@ export default function AdminScreen() {
         ) : (
           <>
             <View style={styles.filters}>
-              <Field
-                label="Mês (AAAA-MM)"
+              <DateControl
+                kind="month"
+                label="Mês"
                 value={period}
                 onChangeText={setPeriod}
-                placeholder="2026-10"
               />
               <Body muted>Horário de São Paulo (America/Sao_Paulo).</Body>
             </View>
             {!validMonth ? (
-              <Empty text="Informe o mês no formato AAAA-MM." />
+              <Empty text="Escolha um mês válido." />
             ) : (
               <>
                 {monthItems.length ? (
@@ -589,53 +622,67 @@ export default function AdminScreen() {
                   <Empty text="Nenhuma publicação prevista para este mês." />
                 )}
                 <View style={styles.pending}>
-                  <Title small>Devocionais pendentes</Title>
-                  <Body muted>
-                    Próximos dias sem devocional publicado ou agendado.
-                  </Body>
-                  {missingDays.length ? (
-                    <View style={s.row}>
-                      {missingDays.map((day) => (
-                        <Chip
-                          key={day}
-                          label={day.split("-").reverse().slice(0, 2).join("/")}
-                          onPress={() => {
-                            const draft = items.find(
-                              (item) =>
-                                item.type === "devotional" &&
-                                item.reference_date === day &&
-                                item.status === "draft",
-                            );
-                            const now = new Date().toISOString();
-                            setEditor({
-                              item: draft || {
-                                id: "",
-                                title: "",
-                                summary: "",
-                                body: "",
-                                type: "devotional",
-                                pillar: "spirit",
-                                status: "draft",
-                                reference_date: day,
-                                details: {},
-                                media_url: null,
-                                cover_path: null,
-                                scheduled_at: null,
-                                published_at: null,
-                                created_at: now,
-                                updated_at: now,
-                                created_by: null,
-                              },
-                            });
-                          }}
-                        />
-                      ))}
-                    </View>
-                  ) : (
-                    <Body>
-                      Os próximos dias deste mês já têm devocional previsto.
-                    </Body>
-                  )}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ expanded: pendingOpen }}
+                    onPress={() => setPendingOpen((v) => !v)}
+                    style={styles.pendingToggle}
+                  >
+                    <Text style={styles.itemTitle}>
+                      Devocionais pendentes ({missingDays.length})
+                    </Text>
+                    <Text style={styles.platformLink}>
+                      {pendingOpen ? "Recolher" : "Ver dias"}
+                    </Text>
+                  </Pressable>
+                  {pendingOpen &&
+                    (missingDays.length ? (
+                      <View style={s.row}>
+                        {missingDays.map((day) => (
+                          <Chip
+                            key={day}
+                            label={day
+                              .split("-")
+                              .reverse()
+                              .slice(0, 2)
+                              .join("/")}
+                            onPress={() => {
+                              const draft = items.find(
+                                (item) =>
+                                  item.type === "devotional" &&
+                                  item.reference_date === day &&
+                                  item.status === "draft",
+                              );
+                              const now = new Date().toISOString();
+                              setEditor({
+                                item: draft || {
+                                  id: "",
+                                  title: "",
+                                  summary: "",
+                                  body: "",
+                                  type: "devotional",
+                                  pillar: "spirit",
+                                  status: "draft",
+                                  reference_date: day,
+                                  details: {},
+                                  media_url: null,
+                                  cover_path: null,
+                                  scheduled_at: null,
+                                  published_at: null,
+                                  created_at: now,
+                                  updated_at: now,
+                                  created_by: null,
+                                },
+                              });
+                            }}
+                          />
+                        ))}
+                      </View>
+                    ) : (
+                      <Body>
+                        Os próximos dias deste mês já têm devocional previsto.
+                      </Body>
+                    ))}
                 </View>
               </>
             )}
@@ -700,7 +747,44 @@ const styles = StyleSheet.create({
   navSelected: { backgroundColor: colors.pink },
   navText: { fontFamily: fonts.medium, color: colors.burgundy, fontSize: 17 },
   navDivider: { height: 1, backgroundColor: colors.line, marginVertical: 22 },
-  mobileNav: { gap: 8, marginBottom: 16 },
+  mobileNav: { gap: 8, marginBottom: 12 },
+  mobileTitle: {
+    fontFamily: fonts.medium,
+    color: colors.burgundy,
+    fontSize: 21,
+    lineHeight: 27,
+  },
+  mobileTabs: { flexDirection: "row", gap: 6 },
+  mobileTab: {
+    flex: 1,
+    minHeight: 48,
+    paddingVertical: 10,
+    paddingHorizontal: 3,
+    justifyContent: "center",
+    alignItems: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: colors.line,
+  },
+  mobileTabActive: { borderBottomColor: colors.burgundy },
+  mobileTabText: {
+    fontFamily: fonts.medium,
+    color: colors.burgundy,
+    fontSize: 16,
+    textAlign: "center",
+  },
+  platformLink: {
+    fontFamily: fonts.medium,
+    color: colors.burgundy,
+    fontSize: 14,
+  },
+  pendingToggle: {
+    minHeight: 48,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
   toolbar: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -718,7 +802,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    gap: 18,
+    justifyContent: "flex-end",
+    gap: 12,
     marginBottom: 16,
   },
   demo: { backgroundColor: colors.pink, padding: 14, marginBottom: 24 },

@@ -9,6 +9,7 @@ import {
   s,
   Empty,
   Loading,
+  ErrorState,
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
 import { colors, fonts } from "../../src/theme";
@@ -16,7 +17,7 @@ import { Illustration } from "../../src/components/Illustration";
 import { MotionBlock } from "../../src/components/MotionBlock";
 import { dailyDevotional } from "../../src/utils/editorialDay";
 export default function Home() {
-  const { publications, events, user, loading, isDemo, error } = useEleva();
+  const { publications, events, user, loading, error, refresh } = useEleva();
   const devotional = dailyDevotional(publications);
   return (
     <Page
@@ -28,16 +29,16 @@ export default function Home() {
           : "Que bom ter você aqui."
       }
     >
-      {error && <Empty text={error} />}
+      {!!error && <ErrorState text={error} onRetry={refresh} />}
       {loading ? (
         <Loading />
       ) : devotional ? (
         <MotionBlock>
           <PublicationCard item={devotional} feature />
         </MotionBlock>
-      ) : (
+      ) : !error ? (
         <Empty text="O devocional de hoje ainda não foi publicado. Os anteriores estão em Aprender." />
-      )}
+      ) : null}
       <Section
         title="Para a sua semana"
         action="Ver todos"
@@ -49,7 +50,7 @@ export default function Home() {
         .map((p) => (
           <PublicationCard key={p.id} item={p} />
         ))}
-      <Section title="Vamos nos encontrar?" />
+      {!!events.length && <Section title="Vamos nos encontrar?" />}
       {events.slice(0, 1).map((e) => (
         <Pressable
           key={e.id}

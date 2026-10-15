@@ -11,6 +11,7 @@ import { Body, Title, Field, Button, s } from "../ui";
 import { colors } from "../../theme";
 import type { Challenge, ChallengeDraft } from "../../types/domain";
 import { validateChallengeDraft } from "../../services/challengeValidation";
+import { DateControl } from "./DateControl";
 import { localDate } from "./editorial";
 
 type Props = {
@@ -159,6 +160,8 @@ export function ChallengeEditor({ item, onClose, onSave }: Props) {
           </View>
           <ScrollView
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            automaticallyAdjustKeyboardInsets
             contentContainerStyle={styles.form}
           >
             {discard ? (
@@ -194,19 +197,17 @@ export function ChallengeEditor({ item, onClose, onSave }: Props) {
                   editable={!busy}
                   style={{ minHeight: 100, textAlignVertical: "top" }}
                 />
-                <Field
-                  label="Início (AAAA-MM-DD)"
-                  placeholder="AAAA-MM-DD"
+                <DateControl
+                  label="Início"
                   value={starts}
                   onChangeText={edit(setStarts)}
-                  editable={!busy}
+                  disabled={busy}
                 />
-                <Field
-                  label="Fim (AAAA-MM-DD)"
-                  placeholder="AAAA-MM-DD"
+                <DateControl
+                  label="Fim"
                   value={ends}
                   onChangeText={edit(setEnds)}
-                  editable={!busy}
+                  disabled={busy}
                 />
                 <Field
                   label="Link do GymRats (opcional)"

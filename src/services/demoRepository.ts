@@ -152,6 +152,7 @@ export async function saveDemoSession(
   await storage.setItem(DEMO_SESSION_KEY, account ?? "");
 }
 interface DemoState {
+  memberNameVersion?: number;
   challenges?: Challenge[];
   publications: Publication[];
   profiles?: Partial<Record<DemoAccount, Profile>>;
@@ -212,7 +213,12 @@ export function createDemoRepository(
     });
     if (!Array.isArray(state!.challenges))
       state!.challenges = JSON.parse(JSON.stringify(challenges));
-    // O formato antigo guardava uma única atividade, agora atribuída à Marina.
+    if (!state!.memberNameVersion) {
+      const profile = state!.profiles?.marina;
+      if (profile?.full_name === "Marina") profile.full_name = "Jeice";
+      state!.memberNameVersion = 2;
+    }
+    // A chave interna permanece estável para preservar as atividades da integrante.
     if (!state!.activities)
       state!.activities = { marina: state!.activity ?? emptyActivity() };
     delete state!.activity;
@@ -352,7 +358,7 @@ export function createDemoRepository(
       return (
         state.profiles?.[selected] ?? {
           id: `demo-${selected}`,
-          full_name: selected === "rebeca" ? "Rebeca" : "Marina",
+          full_name: selected === "rebeca" ? "Rebeca" : "Jeice",
           avatar_path: null,
           phone: null,
           city: null,

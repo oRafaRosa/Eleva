@@ -1,4 +1,5 @@
-import { Image, Text, View } from "react-native";
+import { useState } from "react";
+import { Image, Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
 import {
   Page,
@@ -8,11 +9,32 @@ import {
   PublicationCard,
   Empty,
   Button,
+  ErrorState,
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
 import { colors, fonts } from "../../src/theme";
 export default function Profile() {
-  const { user, favorites, publications, logout } = useEleva();
+  const { user, favorites, publications, logout, actionBusy, error, refresh } =
+    useEleva();
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [accountError, setAccountError] = useState("");
+  const saved = publications.filter((publication) =>
+    favorites.includes(publication.id),
+  );
+  async function exit() {
+    if (leaving) return;
+    setLeaving(true);
+    setAccountError("");
+    try {
+      await logout();
+      router.replace("/login");
+    } catch {
+      setAccountError("Não foi possível sair da conta. Tente novamente.");
+    } finally {
+      setLeaving(false);
+    }
+  }
   return (
     <Page title="Meu ELEVA">
       <View
@@ -63,28 +85,55 @@ export default function Profile() {
         label="Editar perfil"
         onPress={() => router.push("/profile-edit")}
       />
-      <Section title="Salvos para depois" />
-      {publications
-        .filter((p) => favorites.includes(p.id))
-        .map((p) => (
-          <PublicationCard key={p.id} item={p} />
-        ))}
-      {!favorites.length && (
-        <Empty text="Use “Salvar” em um conteúdo para encontrá-lo aqui." />
-      )}
-      <View style={{ gap: 12, marginTop: 32 }}>
-        {user?.role === "admin" && (
-          <Button
-            label="Abrir painel administrativo"
-            onPress={() => router.push("/admin")}
-          />
+      <View style={{ marginTop: 16 }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Opções da conta"
+          accessibilityState={{ expanded: accountOpen }}
+          onPress={() => setAccountOpen(!accountOpen)}
+          style={{
+            minHeight: 48,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderBottomWidth: 1,
+            borderBottomColor: colors.line,
+            paddingVertical: 12,
+          }}
+        >
+          <Body>Conta</Body>
+          <Body muted style={{ fontSize: 15 }}>
+            {accountOpen ? "Ocultar" : "Mostrar"}
+          </Body>
+        </Pressable>
+        {accountOpen && (
+          <View style={{ gap: 12, paddingVertical: 16 }}>
+            {user?.role === "admin" && (
+              <Button
+                secondary
+                label="Abrir painel administrativo"
+                onPress={() => router.push("/admin")}
+              />
+            )}
+            <Button
+              secondary
+              label={leaving ? "Saindo…" : "Sair da conta"}
+              disabled={leaving || actionBusy}
+              onPress={() => void exit()}
+            />
+          </View>
         )}
-        <Button
-          secondary
-          label="Sair da conta"
-          onPress={() => void logout().then(() => router.replace("/login"))}
-        />
+        {!!accountError && <ErrorState text={accountError} onRetry={exit} />}
       </View>
+      <Section title="Salvos para depois" />
+      {!!error && <ErrorState text={error} onRetry={refresh} />}
+      {saved.length ? (
+        saved.map((publication) => (
+          <PublicationCard key={publication.id} item={publication} />
+        ))
+      ) : !error ? (
+        <Empty text="Use “Salvar” em um conteúdo para encontrá-lo aqui." />
+      ) : null}
     </Page>
   );
 }

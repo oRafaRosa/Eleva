@@ -19,6 +19,7 @@ const storage: DemoStorage = {
   },
 };
 interface State {
+  memberNameVersion?: number;
   topics: ForumTopic[];
   likes: { user_id: string; topic_id: string }[];
   replies: ForumReply[];
@@ -39,6 +40,18 @@ export function createDemoForum(
     const state = raw
       ? JSON.parse(raw)
       : { topics: [], replies: [], reports: [] };
+    if (!state.memberNameVersion) {
+      const rename = (item: ForumTopic | ForumReply) => ({
+        ...item,
+        author_name:
+          item.author_id === "demo-marina" && item.author_name === "Marina"
+            ? "Jeice"
+            : item.author_name,
+      });
+      state.topics = state.topics.map(rename);
+      state.replies = state.replies.map(rename);
+      state.memberNameVersion = 2;
+    }
     return { ...state, likes: state.likes ?? [] };
   };
   const save = (s: State) => store.setItem(KEY, JSON.stringify(s));

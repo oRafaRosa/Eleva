@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { Image, Platform, Text, View } from "react-native";
-import { Redirect, router } from "expo-router";
+import { Alert, Image, Platform, Text, TextInput, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { usePreventRemove } from "expo-router/react-navigation";
+import { Redirect, router, useNavigation } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import {
   Body,
   Button,
   Empty,
+  ErrorState,
   Field,
   Loading,
   Page,
@@ -16,7 +19,17 @@ import { colors, fonts } from "../src/theme";
 import { decodeAvatar } from "../src/services/profileValidation";
 
 export default function EditProfile() {
-  const { user, sessionReady, loading, isDemo, updateProfile } = useEleva();
+  const {
+    user,
+    sessionReady,
+    loading,
+    isDemo,
+    updateProfile,
+    refresh,
+    error: loadError,
+    authStatus,
+  } = useEleva();
+  const navigation = useNavigation();
   const [name, setName] = useState(user?.full_name ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
   const [city, setCity] = useState(user?.city ?? "");
@@ -27,6 +40,18 @@ export default function EditProfile() {
   const active = useRef(true);
   const saveLock = useRef(false);
   const pickerLock = useRef(false);
+  const [draftReady, setDraftReady] = useState(false);
+  const initialized = useRef<string | null>(null);
+  const baseline = useRef({
+    name: user?.full_name ?? "",
+    phone: user?.phone ?? "",
+    city: user?.city ?? "",
+  });
+  const allowLeave = useRef(false);
+  const draftKey = useRef<string | null>(null);
+  const writeQueue = useRef(Promise.resolve());
+  const phoneRef = useRef<TextInput>(null);
+  const cityRef = useRef<TextInput>(null);
   const identity = useRef(user?.id);
   identity.current = user?.id;
   useEffect(() => {
@@ -35,12 +60,155 @@ export default function EditProfile() {
       active.current = false;
     };
   }, []);
+  const dirty =
+    draftReady &&
+    (name !== baseline.current.name ||
+      phone !== baseline.current.phone ||
+      city !== baseline.current.city ||
+      photo !== undefined);
+  const draft = {
+    name,
+    phone,
+    city,
+    ...(photo !== undefined ? { photo } : {}),
+  };
+  const latestDraft = useRef(draft);
+  latestDraft.current = draft;
+  const dirtyRef = useRef(dirty);
+  dirtyRef.current = dirty;
   useEffect(() => {
-    setName(user?.full_name ?? "");
-    setPhone(user?.phone ?? "");
-    setCity(user?.city ?? "");
+    if (!user || initialized.current === user.id) return;
+    const id = user.id;
+    initialized.current = id;
+    draftKey.current = `eleva:profile-draft:v1:${isDemo ? "demo" : "live"}:${id}`;
+    setDraftReady(false);
+    baseline.current = {
+      name: user.full_name,
+      phone: user.phone ?? "",
+      city: user.city ?? "",
+    };
+    setName(baseline.current.name);
+    setPhone(baseline.current.phone);
+    setCity(baseline.current.city);
     setPhoto(undefined);
-  }, [user?.id]);
+    AsyncStorage.getItem(draftKey.current)
+      .then((raw) => {
+        if (!active.current || identity.current !== id || !raw) return;
+        const stored = JSON.parse(raw);
+        if (
+          typeof stored.name !== "string" ||
+          typeof stored.phone !== "string" ||
+          typeof stored.city !== "string"
+        )
+          return;
+        if (stored.photo !== undefined && stored.photo !== null)
+          decodeAvatar(stored.photo);
+        setName(stored.name);
+        setPhone(stored.phone);
+        setCity(stored.city);
+        setPhoto(stored.photo);
+      })
+      .catch(() => {
+        /* A malformed draft never replaces the saved profile. */
+      })
+      .finally(() => {
+        if (active.current && identity.current === id) setDraftReady(true);
+      });
+  }, [user?.id, isDemo]);
+  useEffect(() => {
+    if (!draftReady || allowLeave.current || !draftKey.current) return;
+    const key = draftKey.current;
+    if (!dirty) {
+      writeQueue.current = writeQueue.current
+        .catch(() => {})
+        .then(() => AsyncStorage.removeItem(key))
+        .catch(() => {});
+      return;
+    }
+    const timer = setTimeout(() => {
+      if (allowLeave.current) return;
+      const value = JSON.stringify(latestDraft.current);
+      writeQueue.current = writeQueue.current
+        .catch(() => {})
+        .then(() => AsyncStorage.setItem(key, value))
+        .catch(() => {});
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [name, phone, city, photo, draftReady, dirty]);
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof window === "undefined") return;
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      if (
+        allowLeave.current ||
+        (!dirtyRef.current && !saveLock.current && !pickerLock.current)
+      )
+        return;
+      if (draftKey.current && dirtyRef.current) {
+        try {
+          window.localStorage.setItem(
+            draftKey.current,
+            JSON.stringify(latestDraft.current),
+          );
+        } catch {
+          /* Browser storage may be unavailable. */
+        }
+      }
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    return () => window.removeEventListener("beforeunload", beforeUnload);
+  }, []);
+  async function discardAndLeave(proceed: () => void) {
+    if (saveLock.current || pickerLock.current) {
+      setError("Aguarde a foto ou o salvamento terminar.");
+      return;
+    }
+    allowLeave.current = true;
+    try {
+      await writeQueue.current.catch(() => {});
+      if (draftKey.current) await AsyncStorage.removeItem(draftKey.current);
+      proceed();
+    } catch {
+      allowLeave.current = false;
+      setError("Não foi possível descartar as alterações. Tente novamente.");
+    }
+  }
+  function requestLeave(proceed: () => void) {
+    if (saveLock.current || pickerLock.current) {
+      setError("Aguarde a foto ou o salvamento terminar.");
+      return;
+    }
+    if (!dirtyRef.current) {
+      void discardAndLeave(proceed);
+      return;
+    }
+    if (Platform.OS === "web") {
+      if (
+        typeof window !== "undefined" &&
+        window.confirm("Descartar as alterações do perfil?")
+      )
+        void discardAndLeave(proceed);
+    } else
+      Alert.alert("Descartar alterações?", "Seu perfil ainda não foi salvo.", [
+        { text: "Continuar editando", style: "cancel" },
+        {
+          text: "Descartar",
+          style: "destructive",
+          onPress: () => void discardAndLeave(proceed),
+        },
+      ]);
+  }
+  usePreventRemove(
+    Boolean(user) && (dirty || busy || preparing),
+    ({ data }) => {
+      if (allowLeave.current) {
+        navigation.dispatch(data.action);
+        return;
+      }
+      requestLeave(() => navigation.dispatch(data.action));
+    },
+  );
   async function choosePhoto() {
     if (pickerLock.current || saveLock.current || !user) return;
     pickerLock.current = true;
@@ -142,8 +310,13 @@ export default function EditProfile() {
         city,
         avatar_base64: photo,
       });
-      if (active.current && identity.current === accountId)
+      if (active.current && identity.current === accountId) {
+        allowLeave.current = true;
+        await writeQueue.current.catch(() => {});
+        if (draftKey.current)
+          await AsyncStorage.removeItem(draftKey.current).catch(() => {});
         router.replace("/(tabs)/profile");
+      }
     } catch (e) {
       if (active.current && identity.current === accountId)
         setError(
@@ -157,7 +330,18 @@ export default function EditProfile() {
     }
   }
   if (!sessionReady || (loading && !user)) return <Loading />;
+  if (
+    !user &&
+    loadError &&
+    (authStatus === "unknown" || authStatus === "verified")
+  )
+    return (
+      <Page back title="Editar perfil">
+        <ErrorState text={loadError} onRetry={refresh} />
+      </Page>
+    );
   if (!user) return <Redirect href="/login" />;
+  if (!draftReady) return <Loading />;
   const uri =
     photo === undefined
       ? user.avatar_url
@@ -165,7 +349,11 @@ export default function EditProfile() {
         ? `data:image/jpeg;base64,${photo}`
         : null;
   return (
-    <Page back title="Editar perfil">
+    <Page
+      back
+      title="Editar perfil"
+      onBack={() => requestLeave(() => router.replace("/(tabs)/profile"))}
+    >
       <View style={{ gap: 24 }}>
         <View
           style={{
@@ -228,8 +416,12 @@ export default function EditProfile() {
           maxLength={120}
           autoComplete="name"
           editable={!busy}
+          returnKeyType="next"
+          submitBehavior="submit"
+          onSubmitEditing={() => phoneRef.current?.focus()}
         />
         <Field
+          ref={phoneRef}
           label="Telefone"
           value={phone}
           onChangeText={setPhone}
@@ -237,14 +429,20 @@ export default function EditProfile() {
           keyboardType="phone-pad"
           autoComplete="tel"
           editable={!busy}
+          returnKeyType="next"
+          submitBehavior="submit"
+          onSubmitEditing={() => cityRef.current?.focus()}
         />
         <Field
+          ref={cityRef}
           label="Cidade"
           value={city}
           onChangeText={setCity}
           maxLength={100}
           autoCapitalize="words"
           editable={!busy}
+          returnKeyType="done"
+          onSubmitEditing={() => void save()}
         />
         {!!error && <Empty text={error} />}
         <View style={{ gap: 12 }}>
@@ -256,8 +454,10 @@ export default function EditProfile() {
           <Button
             secondary
             label="Cancelar"
-            disabled={busy}
-            onPress={() => router.replace("/(tabs)/profile")}
+            disabled={busy || preparing}
+            onPress={() =>
+              requestLeave(() => router.replace("/(tabs)/profile"))
+            }
           />
         </View>
         {isDemo && (

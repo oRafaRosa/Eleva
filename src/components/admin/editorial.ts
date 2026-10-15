@@ -45,7 +45,7 @@ export function validDate(value: string): boolean {
 // Offset is derived from the IANA timezone, including historical DST rules.
 export function scheduledInstant(day: string, time: string): string {
   if (!validDate(day) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time))
-    throw new Error("Confira a data (AAAA-MM-DD) e o horário (HH:MM).");
+    throw new Error("Confira a data e o horário.");
   const nominal = Date.parse(`${day}T${time}:00Z`);
   let instant = nominal;
   for (let i = 0; i < 3; i++) {

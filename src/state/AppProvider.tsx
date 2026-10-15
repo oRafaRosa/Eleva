@@ -24,6 +24,17 @@ import {
   type DemoAccount,
 } from "../services/demoRepository";
 import { colors, fonts } from "../theme";
+import {
+  verifyMember,
+  loadMemberContent,
+  saveThenRefresh,
+  refreshFailureDisposition,
+  invalidAuthSession,
+  authEventDecision,
+  StaleSessionError,
+  SessionGateError,
+  type AuthStatus,
+} from "../services/memberLoading";
 type User = Profile & { role: "member" | "admin" };
 interface Context {
   repository: ElevaRepository;
@@ -38,6 +49,8 @@ interface Context {
   user: User | null;
   isDemo: boolean;
   loading: boolean;
+  actionBusy: boolean;
+  authStatus: AuthStatus;
   error: string;
   notice: string;
   refresh: () => Promise<void>;
@@ -72,11 +85,25 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
+  const [actionBusy, setActionBusy] = useState(false);
   const [notice, setNotice] = useState("");
   const refreshVersion = useRef(0);
   const actionPending = useRef(false);
+  const sessionEpoch = useRef(0);
+  const subjectRef = useRef<string | null>(null);
+  const userRef = useRef<User | null>(null);
+  function applyUser(next: User | null) {
+    userRef.current = next;
+    setUser(next);
+  }
+  function invalidateIdentity() {
+    sessionEpoch.current++;
+    subjectRef.current = null;
+    clearPrivate();
+  }
   function clearPrivate() {
-    setUser(null);
+    applyUser(null);
     setPublications([]);
     setEvents([]);
     setChallenges([]);
@@ -88,65 +115,77 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
   }
   async function refresh() {
     const version = ++refreshVersion.current;
+    let epoch = sessionEpoch.current;
+    const assertCurrent = () => {
+      if (version !== refreshVersion.current || epoch !== sessionEpoch.current)
+        throw new StaleSessionError();
+    };
     setLoading(true);
     setError("");
+    if (!userRef.current) setAuthStatus("checking");
     if (isDemo && !demoAccount) {
       clearPrivate();
+      setAuthStatus("signed_out");
       setLoading(false);
       return;
     }
     try {
-      const [p, e, c, profile, access] = await Promise.all([
-        repository.listPublications(),
-        repository.listEvents(),
-        repository.listChallenges(),
-        repository.getProfile(),
-        repository.getAccess(),
-      ]);
-      if (version !== refreshVersion.current) return;
-      if (profile && (!access || !access.active)) {
-        clearPrivate();
-        throw new Error(
-          "Seu acesso ainda não está ativo. Fale com a equipe ELEVA.",
-        );
-      }
-      setPublications(p.filter((p) => p.status === "published"));
-      setEvents(e.filter((e) => e.status === "published"));
-      setChallenges(c.filter((c) => c.status === "published"));
-      const steps = (
-        await Promise.all(
-          c
-            .filter((c) => c.status === "published")
-            .map((c) => repository.listChallengeSteps(c.id)),
-        )
-      ).flat();
-      if (version !== refreshVersion.current) return;
-      setSteps(steps);
-      setUser(profile && access ? { ...profile, role: access.role } : null);
-      if (profile) {
-        const a = await repository.getActivity();
-        if (version !== refreshVersion.current) return;
-        setFavorites(a.favoriteIds);
-        setCompletions(a.completionIds);
-        setRegistrations(a.eventIds);
-        setStepCompletions(a.stepIds);
-      } else {
-        setFavorites([]);
-        setCompletions([]);
-        setRegistrations([]);
-        setStepCompletions([]);
-      }
+      const verified = await verifyMember({
+        readIdentity: async () => {
+          if (isDemo) return demoAccount ? `demo-${demoAccount}` : null;
+          if (!supabase) return null;
+          const { data, error } = await supabase.auth.getUser();
+          if (error) throw error;
+          return data.user?.id ?? null;
+        },
+        getAccess: () => repository.getAccess(),
+        getProfile: () => repository.getProfile(),
+        assertCurrent,
+        onSubject(id) {
+          if (subjectRef.current && subjectRef.current !== id) {
+            invalidateIdentity();
+            epoch = sessionEpoch.current;
+          }
+          subjectRef.current = id;
+          if (userRef.current && userRef.current.id !== id) clearPrivate();
+        },
+        onAccess(access, id) {
+          if (userRef.current?.id === id)
+            applyUser({ ...userRef.current, role: access.role });
+        },
+      });
+      assertCurrent();
+      applyUser(verified);
+      setAuthStatus("verified");
+      const loaded = await loadMemberContent(repository);
+      assertCurrent();
+      setPublications(loaded.publications);
+      setEvents(loaded.events);
+      setChallenges(loaded.challenges);
+      setSteps(loaded.challengeSteps);
+      setFavorites(loaded.activity.favoriteIds);
+      setCompletions(loaded.activity.completionIds);
+      setRegistrations(loaded.activity.eventIds);
+      setStepCompletions(loaded.activity.stepIds);
     } catch (e) {
-      if (version === refreshVersion.current) {
-        clearPrivate();
-        setError(
-          e instanceof Error
-            ? e.message
-            : "Não foi possível carregar. Tente novamente.",
-        );
-      }
+      if (e instanceof StaleSessionError) throw e;
+      assertCurrent();
+      const disposition = refreshFailureDisposition(
+        e,
+        userRef.current,
+        subjectRef.current,
+      );
+      if (disposition.clear) clearPrivate();
+      setAuthStatus(disposition.status);
+      setError(
+        e instanceof SessionGateError
+          ? e.message
+          : "Não foi possível atualizar os conteúdos. Tente novamente.",
+      );
+      throw e;
     } finally {
-      if (version === refreshVersion.current) setLoading(false);
+      if (version === refreshVersion.current && epoch === sessionEpoch.current)
+        setLoading(false);
     }
   }
   useEffect(() => {
@@ -169,8 +208,8 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
   }, []);
   useEffect(() => {
     if (!sessionReady) return;
-    clearPrivate();
-    void refresh();
+    invalidateIdentity();
+    void refresh().catch(() => {});
     return () => {
       refreshVersion.current++;
     };
@@ -178,12 +217,28 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!supabase || isDemo) return;
     let alive = true;
-    const { data } = supabase.auth.onAuthStateChange(() => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (!alive) return;
-      refreshVersion.current++;
-      clearPrivate();
+      const nextId = session?.user.id ?? null;
+      const decision = authEventDecision(event, nextId, subjectRef.current);
+      if (decision.signedOut) {
+        refreshVersion.current++;
+        invalidateIdentity();
+        setAuthStatus("signed_out");
+        setError("");
+        setLoading(false);
+        return;
+      }
+      if (decision.clear) {
+        refreshVersion.current++;
+        invalidateIdentity();
+        subjectRef.current = nextId;
+        setAuthStatus("checking");
+        setLoading(true);
+      }
+      // TOKEN_REFRESHED for the same account keeps the screen while access is rechecked.
       setTimeout(() => {
-        if (alive) void refresh();
+        if (alive) void refresh().catch(() => {});
       }, 0);
     });
     return () => {
@@ -197,24 +252,50 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, [notice]);
   async function action(work: () => Promise<void>, message: string) {
-    if (!user) {
-      setNotice("Entre na sua conta para continuar.");
-      return;
+    if (!userRef.current) {
+      const e = new Error("Entre na sua conta para continuar.");
+      setNotice(e.message);
+      throw e;
     }
-    if (actionPending.current) return;
+    if (actionPending.current) {
+      const e = new Error("Aguarde a ação em andamento terminar.");
+      setNotice(e.message);
+      throw e;
+    }
+    const epoch = sessionEpoch.current;
     actionPending.current = true;
+    setActionBusy(true);
+    const assertSame = () => {
+      if (epoch !== sessionEpoch.current) throw new StaleSessionError();
+    };
     try {
-      await work();
-      await refresh();
+      await saveThenRefresh(
+        async () => {
+          await work();
+          assertSame();
+        },
+        async () => {
+          assertSame();
+          await refresh();
+          assertSame();
+        },
+      );
       setNotice(message);
     } catch (e) {
-      setNotice(
-        e instanceof Error
-          ? e.message
-          : "Não foi possível salvar. Tente novamente.",
-      );
+      if (epoch === sessionEpoch.current && invalidAuthSession(e)) {
+        invalidateIdentity();
+        setAuthStatus("signed_out");
+      }
+      if (epoch === sessionEpoch.current)
+        setNotice(
+          e instanceof Error
+            ? e.message
+            : "Não foi possível salvar. Tente novamente.",
+        );
+      throw e;
     } finally {
       actionPending.current = false;
+      setActionBusy(false);
     }
   }
   const value: Context = {
@@ -230,6 +311,8 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     user,
     isDemo,
     loading,
+    actionBusy,
+    authStatus,
     error,
     notice,
     refresh,
@@ -237,7 +320,7 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     async enterDemo(account) {
       await saveDemoSession(account);
       refreshVersion.current++;
-      clearPrivate();
+      invalidateIdentity();
       setLoading(true);
       if (isDemo && demoAccount === account) {
         await refresh();
@@ -262,26 +345,52 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
       setDemo(false);
     },
     async logout() {
-      if (!isDemo && supabase) await supabase.auth.signOut();
+      if (!isDemo && supabase) {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+      }
       refreshVersion.current++;
-      clearPrivate();
+      invalidateIdentity();
+      setAuthStatus("signed_out");
       await saveDemoSession(null);
       setDemoAccount(null);
       setNotice("");
       setLoading(false);
     },
     async updateProfile(update) {
-      if (!user) throw new Error("Entre na sua conta para continuar.");
-      const currentUser = user;
-      const version = refreshVersion.current;
-      const updated = await repository.updateProfile(update);
-      if (version !== refreshVersion.current) return;
-      setUser((existing) =>
-        existing?.id === currentUser.id
-          ? { ...updated, role: currentUser.role }
-          : existing,
-      );
-      setNotice("Perfil salvo.");
+      if (!userRef.current)
+        throw new Error("Entre na sua conta para continuar.");
+      if (actionPending.current)
+        throw new Error("Aguarde a ação em andamento terminar.");
+      const currentUser = userRef.current,
+        epoch = sessionEpoch.current;
+      actionPending.current = true;
+      setActionBusy(true);
+      try {
+        const updated = await repository.updateProfile(update);
+        if (
+          epoch !== sessionEpoch.current ||
+          userRef.current?.id !== currentUser.id
+        )
+          throw new StaleSessionError();
+        applyUser({ ...updated, role: userRef.current.role });
+        setNotice("Perfil salvo.");
+      } catch (e) {
+        if (epoch === sessionEpoch.current && invalidAuthSession(e)) {
+          invalidateIdentity();
+          setAuthStatus("signed_out");
+        }
+        if (epoch === sessionEpoch.current)
+          setNotice(
+            e instanceof Error
+              ? e.message
+              : "Não foi possível salvar o perfil. Tente novamente.",
+          );
+        throw e;
+      } finally {
+        actionPending.current = false;
+        setActionBusy(false);
+      }
     },
     toggleFavorite(id) {
       return action(

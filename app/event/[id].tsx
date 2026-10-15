@@ -1,4 +1,5 @@
 import { View } from "react-native";
+import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, Redirect } from "expo-router";
 import {
   Page,
@@ -8,8 +9,10 @@ import {
   Empty,
   Loading,
   s,
+  ErrorState,
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
+import { SavedRefreshError } from "../../src/services/memberLoading";
 export default function Event() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const {
@@ -21,11 +24,71 @@ export default function Event() {
     cancelRegistration,
     isDemo,
     loading,
+    actionBusy,
+    authStatus,
+    error,
+    refresh,
   } = useEleva();
+  const [pending, setPending] = useState(false);
+  const [confirm, setConfirm] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [needsRefresh, setNeedsRefresh] = useState(false);
+  const [committed, setCommitted] = useState<boolean | null>(null);
+  const lock = useRef(false);
+  const active = useRef(true);
+  const subject = useRef(user?.id);
+  subject.current = user?.id;
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
+  const serverRegistered = registrations.includes(id);
+  const registered = committed ?? serverRegistered;
+  useEffect(() => {
+    if (committed !== null && serverRegistered === committed) {
+      setCommitted(null);
+      setNeedsRefresh(false);
+    }
+  }, [serverRegistered, committed]);
+  async function participate(next: boolean) {
+    if (lock.current || actionBusy || !user) return;
+    lock.current = true;
+    setPending(true);
+    setActionError("");
+    const actor = user.id;
+    try {
+      await (next ? registerEvent(id) : cancelRegistration(id));
+      if (active.current && subject.current === actor) setConfirm(false);
+    } catch (e) {
+      if (active.current && subject.current === actor) {
+        if (e instanceof SavedRefreshError) {
+          setCommitted(next);
+          setNeedsRefresh(true);
+          setConfirm(false);
+        }
+        setActionError(
+          e instanceof Error
+            ? e.message
+            : "Não foi possível atualizar sua participação. Tente novamente.",
+        );
+      }
+    } finally {
+      lock.current = false;
+      if (active.current && subject.current === actor) setPending(false);
+    }
+  }
   if (!sessionReady || (loading && !user))
     return (
       <Page back>
         <Loading />
+      </Page>
+    );
+  if (!user && error && (authStatus === "unknown" || authStatus === "verified"))
+    return (
+      <Page back title="Encontro">
+        <ErrorState text={error} onRetry={refresh} />
       </Page>
     );
   if (!user) return <Redirect href="/login" />;
@@ -39,12 +102,27 @@ export default function Event() {
   if (!e)
     return (
       <Page back title="Encontro indisponível">
-        <Empty text="Este encontro não está disponível." />
+        {error ? (
+          <ErrorState text={error} onRetry={refresh} />
+        ) : (
+          <Empty text="Este encontro não está disponível." />
+        )}
       </Page>
     );
-  const registered = registrations.includes(id);
   return (
     <Page back kicker="Encontro ELEVA" title={e.title}>
+      {!!error && !actionError && <ErrorState text={error} onRetry={refresh} />}
+      {!!actionError && (
+        <ErrorState
+          text={actionError}
+          onRetry={async () => {
+            await refresh();
+            setActionError("");
+            setNeedsRefresh(false);
+            setCommitted(null);
+          }}
+        />
+      )}
       <View style={[s.panel, { marginBottom: 28 }]}>
         <Body>
           {new Date(e.starts_at).toLocaleDateString("pt-BR", {
@@ -75,19 +153,41 @@ export default function Event() {
           }
         />
       )}
-      <Button
-        label={
-          registered
-            ? "Cancelar inscrição"
-            : isDemo
-              ? "Quero participar"
-              : "Quero participar"
-        }
-        secondary={registered}
-        onPress={() =>
-          void (registered ? cancelRegistration(id) : registerEvent(id))
-        }
-      />
+      {confirm ? (
+        <View style={{ gap: 12 }}>
+          <Body>Cancelar sua participação?</Body>
+          <Button
+            label="Manter participação"
+            disabled={pending || actionBusy}
+            onPress={() => setConfirm(false)}
+          />
+          <Button
+            secondary
+            busy={pending}
+            disabled={actionBusy || needsRefresh}
+            label={pending ? "Cancelando…" : "Confirmar cancelamento"}
+            onPress={() => void participate(false)}
+          />
+        </View>
+      ) : (
+        <Button
+          label={
+            pending
+              ? "Salvando…"
+              : registered
+                ? "Cancelar inscrição"
+                : isDemo
+                  ? "Quero participar"
+                  : "Quero participar"
+          }
+          secondary={registered}
+          busy={pending}
+          disabled={actionBusy || needsRefresh}
+          onPress={() =>
+            registered ? setConfirm(true) : void participate(true)
+          }
+        />
+      )}
     </Page>
   );
 }

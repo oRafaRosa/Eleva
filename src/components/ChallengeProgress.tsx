@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   Easing,
@@ -81,6 +81,7 @@ export function ChallengeStepControl({
   const reducedMotion = useReducedMotion();
   const confirmation = useSharedValue(checked ? 1 : 0);
   const [pending, setPending] = useState(false);
+  const lock = useRef(false);
   useEffect(() => {
     confirmation.set(
       withTiming(checked ? 1 : 0, {
@@ -96,11 +97,15 @@ export function ChallengeStepControl({
     transform: [{ scale: 0.96 + confirmation.get() * 0.04 }],
   }));
   async function toggle() {
-    if (pending) return;
+    if (lock.current) return;
+    lock.current = true;
     setPending(true);
     try {
       await onToggle();
+    } catch {
+      // O estado confirmado fica intacto; o aviso da ação mostra como tentar novamente.
     } finally {
+      lock.current = false;
       setPending(false);
     }
   }

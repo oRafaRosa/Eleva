@@ -151,12 +151,12 @@ test("armazenamentos distintos não compartilham dados e estado corrompido recup
   );
 });
 
-test("Marina e Rebeca têm identidades e permissões próprias", async () => {
+test("Jeice e Rebeca têm identidades e permissões próprias", async () => {
   const storage = memory();
   const marina = createDemoRepository("marina", storage);
   const rebeca = createDemoRepository("rebeca", storage);
   assert.equal((await marina.getProfile())?.id, "demo-marina");
-  assert.equal((await marina.getProfile())?.full_name, "Marina");
+  assert.equal((await marina.getProfile())?.full_name, "Jeice");
   assert.equal((await rebeca.getProfile())?.id, "demo-rebeca");
   assert.equal((await rebeca.getProfile())?.full_name, "Rebeca");
   assert.equal((await marina.getAccess())?.role, "member");

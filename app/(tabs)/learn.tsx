@@ -8,13 +8,14 @@ import {
   PublicationCard,
   Empty,
   Loading,
+  ErrorState,
   s,
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
 import { MotionBlock } from "../../src/components/MotionBlock";
 import { colors, fonts } from "../../src/theme";
 export default function Learn() {
-  const { publications, loading } = useEleva();
+  const { publications, loading, error, refresh } = useEleva();
   const [q, setQ] = useState("");
   const [pillar, setPillar] = useState("all");
   const [searchOpen, setSearchOpen] = useState(false);
@@ -46,6 +47,7 @@ export default function Learn() {
         </View>
       }
     >
+      {!!error && <ErrorState text={error} onRetry={refresh} />}
       {searchOpen && (
         <MotionBlock style={{ marginBottom: 12 }}>
           <Field
@@ -54,6 +56,7 @@ export default function Learn() {
             value={q}
             onChangeText={setQ}
             autoFocus
+            returnKeyType="search"
           />
         </MotionBlock>
       )}
@@ -112,9 +115,9 @@ export default function Learn() {
             <PublicationCard key={p.id} item={p} />
           ))}
         </MotionBlock>
-      ) : (
+      ) : !error ? (
         <Empty text="Não encontramos conteúdo com essa busca. Tente outro assunto." />
-      )}
+      ) : null}
     </Page>
   );
 }

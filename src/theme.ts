@@ -7,6 +7,7 @@ export const colors = {
   ivory: "#FBF7F3",
   white: "#FFFFFF",
   line: "#E7DDD7",
+  controlLine: "#9B8790",
   sage: "#E4E8DE",
 };
 export const fonts = {

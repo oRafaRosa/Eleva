@@ -7,7 +7,7 @@ import { MotionBlock } from "../src/components/MotionBlock";
 export default function Welcome() {
   const wide = useWindowDimensions().width > 640;
   return (
-    <Page>
+    <Page showBrand={false}>
       <View style={[styles.hero, wide && { padding: 48 }]}>
         <View
           style={{

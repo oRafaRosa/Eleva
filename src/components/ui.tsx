@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, forwardRef } from "react";
 import {
   View,
   Text,
@@ -10,12 +10,14 @@ import {
   Image,
   ViewStyle,
   TextStyle,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import Animated, {
   useReducedMotion,
   cubicBezier,
 } from "react-native-reanimated";
-import { router } from "expo-router";
+import { router, type Href } from "expo-router";
 import { colors, fonts, typeLabels, pillarLabels } from "../theme";
 import { resolveContentAsset } from "../services/supabase";
 import { Publication } from "../types/domain";
@@ -62,19 +64,21 @@ export function Button({
   onPress,
   secondary = false,
   disabled = false,
+  busy = false,
 }: {
   label: string;
   onPress: () => void;
   secondary?: boolean;
   disabled?: boolean;
+  busy?: boolean;
 }) {
   const [pressed, setPressed] = useState(false);
   const reduce = useReducedMotion();
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityState={{ disabled }}
-      disabled={disabled}
+      accessibilityState={{ disabled: disabled || busy, busy }}
+      disabled={disabled || busy}
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
@@ -110,6 +114,9 @@ export function Page({
   back = false,
   titleStyle,
   actions,
+  onBack,
+  backHref = "/(tabs)/home",
+  showBrand = true,
 }: {
   children: React.ReactNode;
   title?: string;
@@ -117,67 +124,90 @@ export function Page({
   back?: boolean;
   titleStyle?: TextStyle;
   actions?: React.ReactNode;
+  onBack?: () => void;
+  backHref?: Href;
+  showBrand?: boolean;
 }) {
   return (
-    <ScrollView
+    <KeyboardAvoidingView
       style={s.page}
-      contentContainerStyle={s.content}
-      keyboardShouldPersistTaps="handled"
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      enabled={Platform.OS !== "web"}
     >
-      <View style={s.top}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={back ? "Voltar" : "ELEVA, início"}
-          style={{ minHeight: 48, justifyContent: "center" }}
-          onPress={() => (back ? router.back() : router.push("/(tabs)/home"))}
-        >
-          <Text
-            style={[
-              s.logo,
-              back && {
-                fontFamily: fonts.medium,
-                fontSize: 17,
-                letterSpacing: 0,
-              },
-            ]}
-          >
-            {back ? "‹ Voltar" : "ELEVA"}
-          </Text>
-        </Pressable>
-      </View>
-      {back && kicker && (
-        <Body muted style={{ marginTop: 12, fontSize: 14 }}>
-          {kicker}
-        </Body>
-      )}
-      {(title || actions) && (
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-            marginTop: 16,
-            marginBottom: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          {title && (
-            <Title
-              style={[
-                { fontSize: 34, lineHeight: 40, flexShrink: 1 },
-                titleStyle,
-              ]}
+      <ScrollView
+        style={s.page}
+        contentContainerStyle={s.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
+        {(showBrand || back) && (
+          <View style={s.top}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={back ? "Voltar" : "ELEVA, início"}
+              style={{ minHeight: 48, justifyContent: "center" }}
+              onPress={() => {
+                if (!back) {
+                  router.navigate("/(tabs)/home");
+                  return;
+                }
+                if (onBack) {
+                  onBack();
+                  return;
+                }
+                if (router.canGoBack()) router.back();
+                else router.replace(backHref);
+              }}
             >
-              {title}
-            </Title>
-          )}
-          {actions}
-        </View>
-      )}
-      {children}
-      <View style={{ height: 36 }} />
-    </ScrollView>
+              <Text
+                style={[
+                  s.logo,
+                  back && {
+                    fontFamily: fonts.medium,
+                    fontSize: 17,
+                    letterSpacing: 0,
+                  },
+                ]}
+              >
+                {back ? "‹ Voltar" : "ELEVA"}
+              </Text>
+            </Pressable>
+          </View>
+        )}
+        {back && kicker && (
+          <Body muted style={{ marginTop: 12, fontSize: 14 }}>
+            {kicker}
+          </Body>
+        )}
+        {(title || actions) && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              marginTop: 16,
+              marginBottom: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            {title && (
+              <Title
+                style={[
+                  { fontSize: 34, lineHeight: 40, flexShrink: 1 },
+                  titleStyle,
+                ]}
+              >
+                {title}
+              </Title>
+            )}
+            {actions}
+          </View>
+        )}
+        {children}
+        <View style={{ height: 36 }} />
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 export function Section({
@@ -195,25 +225,80 @@ export function Section({
         {title}
       </Title>
       {action && (
-        <Pressable accessibilityRole="button" onPress={onPress}>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onPress}
+          style={{
+            minHeight: 48,
+            minWidth: 48,
+            justifyContent: "center",
+            paddingHorizontal: 8,
+          }}
+        >
           <Text style={s.link}>{action}</Text>
         </Pressable>
       )}
     </View>
   );
 }
-export function Field({
-  label,
-  ...props
-}: { label: string } & React.ComponentProps<typeof TextInput>) {
+export const Field = forwardRef<
+  TextInput,
+  { label: string } & React.ComponentProps<typeof TextInput>
+>(function Field({ label, ...props }, ref) {
+  const [focused, setFocused] = useState(false);
   return (
     <View style={{ gap: 7 }}>
       <Text style={s.fieldLabel}>{label}</Text>
       <TextInput
         {...props}
+        ref={ref}
         accessibilityLabel={props.accessibilityLabel || label}
         placeholderTextColor={colors.muted}
-        style={[s.input, props.style]}
+        onFocus={(event) => {
+          setFocused(true);
+          props.onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          props.onBlur?.(event);
+        }}
+        style={[
+          s.input,
+          { borderColor: focused ? colors.burgundy : colors.controlLine },
+          props.style,
+        ]}
+      />
+    </View>
+  );
+});
+export function ErrorState({
+  text,
+  onRetry,
+}: {
+  text: string;
+  onRetry: () => void | Promise<void>;
+}) {
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+  return (
+    <View accessibilityRole="alert" style={{ gap: 12, marginVertical: 12 }}>
+      <Body muted>{text}</Body>
+      <Button
+        secondary
+        busy={busy}
+        label={busy ? "Carregando…" : "Tentar novamente"}
+        onPress={() => {
+          if (lock.current) return;
+          lock.current = true;
+          setBusy(true);
+          void Promise.resolve()
+            .then(onRetry)
+            .catch(() => {})
+            .finally(() => {
+              lock.current = false;
+              setBusy(false);
+            });
+        }}
       />
     </View>
   );
@@ -272,10 +357,12 @@ export function ContentCover({
   variant?: "thumbnail" | "banner" | "detail";
 }) {
   const [url, setUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
   const { isDemo } = useEleva();
   useEffect(() => {
     let active = true;
     setUrl(null);
+    setFailed(false);
     if (
       isDemo &&
       path.length <= 1500000 &&
@@ -290,30 +377,59 @@ export function ContentCover({
       .then((value) => {
         if (active) setUrl(value);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (active) setFailed(true);
+      });
     return () => {
       active = false;
     };
   }, [path, isDemo]);
-  return url ? (
-    <Image
-      accessibilityIgnoresInvertColors
-      source={{ uri: url }}
-      accessible={false}
-      resizeMode={variant === "detail" ? "contain" : "cover"}
-      style={
-        variant === "thumbnail"
-          ? { width: 84, height: 84, borderRadius: 4 }
-          : {
-              width: "100%",
-              height: variant === "detail" ? 240 : 128,
-              borderRadius: 4,
-              marginBottom: 16,
-              backgroundColor: colors.pink,
-            }
-      }
-    />
-  ) : null;
+  const frame: ViewStyle =
+    variant === "thumbnail"
+      ? { width: 84, height: 84, borderRadius: 4, flexShrink: 0 }
+      : {
+          width: "100%",
+          height: variant === "detail" ? 240 : 128,
+          borderRadius: 4,
+          marginBottom: 16,
+        };
+  return (
+    <View
+      style={[
+        frame,
+        {
+          backgroundColor: colors.pink,
+          overflow: "hidden",
+          alignItems: "center",
+          justifyContent: "center",
+        },
+      ]}
+    >
+      {failed ? (
+        <Text
+          accessibilityLabel="Imagem indisponível"
+          style={{
+            fontFamily: fonts.sans,
+            fontSize: variant === "thumbnail" ? 12 : 14,
+            color: colors.burgundy,
+            textAlign: "center",
+            padding: 4,
+          }}
+        >
+          Sem imagem
+        </Text>
+      ) : url ? (
+        <Image
+          accessibilityIgnoresInvertColors
+          source={{ uri: url }}
+          accessible={false}
+          onError={() => setFailed(true)}
+          resizeMode={variant === "detail" ? "contain" : "cover"}
+          style={{ width: "100%", height: "100%" }}
+        />
+      ) : null}
+    </View>
+  );
 }
 export function PublicationCard({
   item,

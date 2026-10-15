@@ -1,11 +1,22 @@
 import { Tabs, Redirect } from "expo-router";
-import { Text } from "react-native";
+import { useWindowDimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { TabIcon } from "../../src/components/TabIcon";
 import { useEleva } from "../../src/state/AppProvider";
-import { Loading } from "../../src/components/ui";
+import { Loading, Page, ErrorState } from "../../src/components/ui";
 import { colors, fonts } from "../../src/theme";
 export default function TabsLayout() {
-  const { user, sessionReady, loading } = useEleva();
+  const { user, sessionReady, loading, error, refresh, authStatus } =
+    useEleva();
+  const insets = useSafeAreaInsets();
+  const { fontScale } = useWindowDimensions();
   if (!sessionReady || (loading && !user)) return <Loading />;
+  if (!user && error && (authStatus === "unknown" || authStatus === "verified"))
+    return (
+      <Page title="Não foi possível abrir">
+        <ErrorState text={error} onRetry={refresh} />
+      </Page>
+    );
   if (!user) return <Redirect href="/login" />;
   return (
     <Tabs
@@ -18,28 +29,26 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.ivory,
           borderTopColor: colors.line,
-          height: 72,
+          height: Math.max(64, Math.ceil(58 * fontScale)) + insets.bottom,
           paddingTop: 9,
-          paddingBottom: 10,
+          paddingBottom: Math.max(8, insets.bottom),
         },
         tabBarLabelStyle: { fontFamily: fonts.medium, fontSize: 12 },
       }}
     >
       {[
-        ["home", "Início", "⌂"],
-        ["learn", "Aprender", "▤"],
-        ["live", "Viver", "◉"],
-        ["connect", "Conectar", "◎"],
-        ["profile", "Meu ELEVA", "○"],
-      ].map(([name, title, icon]) => (
+        ["home", "Início"],
+        ["learn", "Aprender"],
+        ["live", "Viver"],
+        ["connect", "Conectar"],
+        ["profile", "Meu ELEVA"],
+      ].map(([name, title]) => (
         <Tabs.Screen
           key={name}
           name={name}
           options={{
             title,
-            tabBarIcon: ({ color }) => (
-              <Text style={{ fontSize: 23, color }}>{icon}</Text>
-            ),
+            tabBarIcon: ({ color }) => <TabIcon name={name} color={color} />,
           }}
         />
       ))}
