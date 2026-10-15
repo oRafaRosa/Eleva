@@ -36,11 +36,24 @@ export default function Welcome() {
           />
         </View>
       </View>
-      <View style={[styles.hero, wide && { flexDirection: "row" }]}>
+      <View style={styles.hero}>
+        <ImageBackground
+          source={require("../assets/brand/stationery.jpg")}
+          resizeMode="cover"
+          imageStyle={{ width: "100%", height: "100%" }}
+          style={{ width: "100%", aspectRatio: 2 / 3, overflow: "hidden" }}
+        >
+          <Image
+            source={require("../assets/brand/founders-original.png")}
+            accessibilityLabel="As fundadoras do ELEVA the club"
+            resizeMode="contain"
+            style={{ width: "100%", height: "100%" }}
+          />
+        </ImageBackground>
         <ImageBackground
           source={require("../assets/brand/stationery.jpg")}
           imageStyle={{ opacity: 0.13, width: "100%", height: "100%" }}
-          style={[styles.heroCopy, wide && { flex: 1 }]}
+          style={styles.heroCopy}
         >
           <Title
             style={{ fontSize: wide ? 54 : 43, lineHeight: wide ? 56 : 46 }}
@@ -65,16 +78,6 @@ export default function Welcome() {
             />
           </View>
         </ImageBackground>
-        <Image
-          source={require("../assets/brand/founders.jpg")}
-          accessibilityLabel="As fundadoras do ELEVA the club"
-          resizeMode="cover"
-          style={
-            wide
-              ? { width: "44%", height: 560 }
-              : { width: "100%", aspectRatio: 2 / 3 }
-          }
-        />
       </View>
       <ImageBackground
         source={require("../assets/brand/floral-paper.jpg")}
