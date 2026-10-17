@@ -63,9 +63,10 @@ export default function Home() {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "center",
+              gap: 12,
             }}
           >
-            <Body style={{ fontSize: 14 }}>
+            <Body style={{ fontSize: 14, flex: 1 }}>
               {new Date(e.starts_at).toLocaleDateString("pt-BR", {
                 day: "numeric",
                 month: "long",

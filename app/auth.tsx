@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { View } from "react-native";
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { Page, Body, Button, Loading } from "../src/components/ui";
 import { useEleva } from "../src/state/AppProvider";
@@ -14,18 +15,20 @@ export default function AuthCallback() {
     return <Redirect href={user.plan === "free" ? "/plan" : "/(tabs)/home"} />;
   if (!params.error_description && (loading || waiting)) return <Loading />;
   return (
-    <Page title="Confirmação de e-mail">
-      <Body>
-        Se o link já foi utilizado, tente entrar com sua senha. Se ele expirou,
-        peça outro e-mail de confirmação no login.
-      </Body>
-      <Button
-        label="Verificar confirmação"
-        onPress={() => {
-          void refresh().catch(() => {});
-        }}
-      />
-      <LoginLink />
+    <Page layout="form" title="Confirmação de e-mail">
+      <View style={{ gap: 20 }}>
+        <Body>
+          Se o link já foi utilizado, tente entrar com sua senha. Se ele
+          expirou, peça outro e-mail de confirmação no login.
+        </Body>
+        <Button
+          label="Verificar confirmação"
+          onPress={() => {
+            void refresh().catch(() => {});
+          }}
+        />
+        <LoginLink />
+      </View>
     </Page>
   );
 }

@@ -65,12 +65,14 @@ export function Button({
   label,
   onPress,
   secondary = false,
+  tertiary = false,
   disabled = false,
   busy = false,
 }: {
   label: string;
   onPress: () => void;
   secondary?: boolean;
+  tertiary?: boolean;
   disabled?: boolean;
   busy?: boolean;
 }) {
@@ -84,7 +86,12 @@ export function Button({
       onPress={onPress}
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
-      style={{ alignSelf: "stretch", minWidth: 0 }}
+      style={{
+        alignSelf: "stretch",
+        minWidth: 0,
+        maxWidth: "100%",
+        flexShrink: 1,
+      }}
     >
       <Animated.View
         style={[
@@ -92,6 +99,10 @@ export function Button({
           secondary && {
             backgroundColor: "transparent",
             borderColor: colors.burgundy,
+          },
+          tertiary && {
+            backgroundColor: "transparent",
+            borderColor: "transparent",
           },
           disabled && { opacity: 0.5 },
           {
@@ -102,7 +113,13 @@ export function Button({
           },
         ]}
       >
-        <Text style={[s.buttonText, secondary && { color: colors.burgundy }]}>
+        <Text
+          style={[
+            s.buttonText,
+            (secondary || tertiary) && { color: colors.burgundy },
+            tertiary && { textDecorationLine: "underline" },
+          ]}
+        >
           {label}
         </Text>
       </Animated.View>
@@ -119,6 +136,7 @@ export function Page({
   onBack,
   backHref = "/(tabs)/home",
   showBrand = true,
+  layout = "content",
 }: {
   children: React.ReactNode;
   title?: string;
@@ -129,6 +147,7 @@ export function Page({
   onBack?: () => void;
   backHref?: Href;
   showBrand?: boolean;
+  layout?: "content" | "form" | "reading";
 }) {
   const insets = useSafeAreaInsets();
   return (
@@ -141,6 +160,8 @@ export function Page({
         style={s.page}
         contentContainerStyle={[
           s.content,
+          layout === "form" && { maxWidth: 560 },
+          layout === "reading" && { maxWidth: 728 },
           { paddingBottom: 30 + insets.bottom },
         ]}
         keyboardShouldPersistTaps="handled"
@@ -201,7 +222,7 @@ export function Page({
             {title && (
               <Title
                 style={[
-                  { fontSize: 34, lineHeight: 40, flexShrink: 1 },
+                  { fontSize: 32, lineHeight: 38, flexShrink: 1 },
                   titleStyle,
                 ]}
               >
@@ -228,7 +249,7 @@ export function Section({
 }) {
   return (
     <View style={s.section}>
-      <Title small style={{ fontSize: 26, lineHeight: 30 }}>
+      <Title small style={{ fontSize: 26, lineHeight: 30, flexShrink: 1 }}>
         {title}
       </Title>
       {action && (
@@ -481,7 +502,7 @@ export function PublicationCard({
           <View style={{ flex: 1 }}>
             <Body
               style={{
-                fontSize: 13,
+                fontSize: 14,
                 color: feature ? colors.pink : colors.muted,
               }}
             >
@@ -490,11 +511,16 @@ export function PublicationCard({
             <Title
               small
               style={[
-                { marginTop: 6, marginBottom: 10 },
+                {
+                  marginTop: 6,
+                  marginBottom: 10,
+                  fontSize: 26,
+                  lineHeight: 32,
+                },
                 feature && {
                   color: colors.ivory,
-                  fontSize: 34,
-                  lineHeight: 37,
+                  fontSize: 32,
+                  lineHeight: 38,
                 },
               ]}
             >
@@ -547,7 +573,7 @@ export const s = StyleSheet.create({
     width: "100%",
     maxWidth: 840,
     alignSelf: "center",
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 30,
   },
@@ -591,6 +617,7 @@ export const s = StyleSheet.create({
   },
   section: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
     marginTop: 24,

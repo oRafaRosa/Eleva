@@ -336,7 +336,7 @@ export default function EditProfile() {
     (authStatus === "unknown" || authStatus === "verified")
   )
     return (
-      <Page back title="Editar perfil">
+      <Page layout="form" back title="Editar perfil">
         <ErrorState text={loadError} onRetry={refresh} />
       </Page>
     );

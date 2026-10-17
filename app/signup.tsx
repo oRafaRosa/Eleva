@@ -62,6 +62,7 @@ export default function Signup() {
   }
   return (
     <Page
+      layout="form"
       back
       backHref="/login"
       title={sent ? "Confirme seu e-mail" : "Crie sua conta"}

@@ -94,25 +94,25 @@ Correção mínima: diferenciar lista vazia, lista filtrada sem resultados, falh
 
 ## Cobertura das rotas
 
-| Tela | O que manter | O que revisar |
-| --- | --- | --- |
-| `/` | Identidade editorial e uma ação de entrada | Logo da Page mais wordmark do hero repetem a marca; CTA vem depois de título 48px e bloco introdutório. Enxugar para entrada mais rápida, sem descaracterizar a marca (`app/index.tsx:10`, `:20`, `:26`, `:33`). |
-| `/login` | Marina e Rebeca identificadas por papel, sem senha falsa | Os exemplos estão explicitados uma vez. Formulário real é condicional; validar teclado e recuperação desse fluxo quando backend existir (`app/login.tsx:58`, `:85`). |
-| Início | Saudação forte e devocional destacado antes de conteúdo secundário | Ver todos com alvo pequeno; seção de encontro aparece mesmo se não há evento (`home.tsx:52`). Não acrescentar banners de apresentação. |
-| Aprender | Busca/filtros recolhidos, estado expandido, critérios ativos e Limpar visíveis | Erro distinto de vazio; validar título e dois controles em largura pequena e fonte ampliada. Não reabrir filtros por padrão (`learn.tsx:30`, `:79`). |
-| Viver | Desafios antes dos encontros; progresso confirmado e link externo claro | Período ausente; todas as etapas de todos os desafios ficam expandidas (`live.tsx:31`, `:65`). Se houver vários, mostrar progresso e expandir etapas sob demanda. |
-| Conectar | Feed sem regras no topo; coração/comentário com área de 48px; moderação recolhida | Rota de comentários, retorno à lista e erro com retry. Autoria visível por nome, sem exigir avatar em cada mensagem. |
-| Meu ELEVA | Identidade, Editar perfil e salvos nessa ordem | Vazio dos salvos indisponíveis; conta e acesso admin ficam depois de toda a lista, potencialmente distantes se houver muitos salvos (`profile.tsx:75`). Dar acesso compacto a ações da conta, sem outro painel. |
-| `/profile-edit` | Quatro dados úteis, preview da foto e estados Preparando/Salvando | Proteção de edição, teclado e recorte de foto. A nota sobre onde os dados da prévia ficam é pertinente à privacidade, não precisa virar banner. |
-| `/content/[id]` | Leitura em parágrafos, título claro, capa contida e ação de material | Campos omitidos e fidelidade da prévia. Favoritar apenas ao fim dificulta salvar sem ler tudo (`content/[id].tsx:95`); considerar ação compacta perto do título, mantendo conclusão ao fim. |
-| `/event/[id]` | Data, horário, lugar e capacidade agrupados; inscrição explícita | Botão não expõe espera/disabled durante ação (`event/[id].tsx:78`). Cancelamento é direto: proteger ou oferecer recuperação, especialmente quando houver vagas limitadas. |
-| `/admin` Conteúdos | Listagem por separadores; editar direto; ações extras recolhidas | Cabeçalho mobile e critérios ativos identificados só como ativo (`admin.tsx:504`); resumo curto dos critérios ao recolher. |
-| `/admin` Calendário | Lista cronológica e indicação dos dias sem devocional | Seleção manual de mês; chips de todos os dias pendentes em bloco (`admin.tsx:597`). Agrupar a pendência sem perder atalhos por dia. |
-| `/admin` Desafios | Datas/status visíveis e edição separada | Hierarquia compacta do mesmo cabeçalho; não transformar link externo em uma métrica interna. |
-| Editor de publicação | Rascunho, prévia, confirmação de publicação e proteção ao descarte | Ordem dos campos, data/hora, preview fiel, foco e teclado. Não adicionar novas etapas desnecessárias para uma edição simples. |
-| Editor de desafio | Link opcional, limites e confirmação de arquivamento | Datas amigáveis e teclado. As proteções de descarte já existem. |
-| Página não encontrada | Mensagem curta com saída clara | Voltar ao início sempre leva à apresentação (`app/+not-found.tsx:9`); se houver sessão, levar ao Início da integrante. |
-| Shell e abas | Cinco destinos com rótulos, troca sem slide e safe area superior | Três ícones de abas são variações de círculos (`app/(tabs)/_layout.tsx:31`); diferenciar com desenhos simples do mesmo conjunto, sem remover os rótulos. Fonte ampliada, tab bar de 72px e inset inferior exigem dispositivo (`:21`). |
+| Tela                  | O que manter                                                                      | O que revisar                                                                                                                                                                                                                         |
+| --------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                   | Identidade editorial e uma ação de entrada                                        | Logo da Page mais wordmark do hero repetem a marca; CTA vem depois de título 48px e bloco introdutório. Enxugar para entrada mais rápida, sem descaracterizar a marca (`app/index.tsx:10`, `:20`, `:26`, `:33`).                      |
+| `/login`              | Marina e Rebeca identificadas por papel, sem senha falsa                          | Os exemplos estão explicitados uma vez. Formulário real é condicional; validar teclado e recuperação desse fluxo quando backend existir (`app/login.tsx:58`, `:85`).                                                                  |
+| Início                | Saudação forte e devocional destacado antes de conteúdo secundário                | Ver todos com alvo pequeno; seção de encontro aparece mesmo se não há evento (`home.tsx:52`). Não acrescentar banners de apresentação.                                                                                                |
+| Aprender              | Busca/filtros recolhidos, estado expandido, critérios ativos e Limpar visíveis    | Erro distinto de vazio; validar título e dois controles em largura pequena e fonte ampliada. Não reabrir filtros por padrão (`learn.tsx:30`, `:79`).                                                                                  |
+| Viver                 | Desafios antes dos encontros; progresso confirmado e link externo claro           | Período ausente; todas as etapas de todos os desafios ficam expandidas (`live.tsx:31`, `:65`). Se houver vários, mostrar progresso e expandir etapas sob demanda.                                                                     |
+| Conectar              | Feed sem regras no topo; coração/comentário com área de 48px; moderação recolhida | Rota de comentários, retorno à lista e erro com retry. Autoria visível por nome, sem exigir avatar em cada mensagem.                                                                                                                  |
+| Meu ELEVA             | Identidade, Editar perfil e salvos nessa ordem                                    | Vazio dos salvos indisponíveis; conta e acesso admin ficam depois de toda a lista, potencialmente distantes se houver muitos salvos (`profile.tsx:75`). Dar acesso compacto a ações da conta, sem outro painel.                       |
+| `/profile-edit`       | Quatro dados úteis, preview da foto e estados Preparando/Salvando                 | Proteção de edição, teclado e recorte de foto. A nota sobre onde os dados da prévia ficam é pertinente à privacidade, não precisa virar banner.                                                                                       |
+| `/content/[id]`       | Leitura em parágrafos, título claro, capa contida e ação de material              | Campos omitidos e fidelidade da prévia. Favoritar apenas ao fim dificulta salvar sem ler tudo (`content/[id].tsx:95`); considerar ação compacta perto do título, mantendo conclusão ao fim.                                           |
+| `/event/[id]`         | Data, horário, lugar e capacidade agrupados; inscrição explícita                  | Botão não expõe espera/disabled durante ação (`event/[id].tsx:78`). Cancelamento é direto: proteger ou oferecer recuperação, especialmente quando houver vagas limitadas.                                                             |
+| `/admin` Conteúdos    | Listagem por separadores; editar direto; ações extras recolhidas                  | Cabeçalho mobile e critérios ativos identificados só como ativo (`admin.tsx:504`); resumo curto dos critérios ao recolher.                                                                                                            |
+| `/admin` Calendário   | Lista cronológica e indicação dos dias sem devocional                             | Seleção manual de mês; chips de todos os dias pendentes em bloco (`admin.tsx:597`). Agrupar a pendência sem perder atalhos por dia.                                                                                                   |
+| `/admin` Desafios     | Datas/status visíveis e edição separada                                           | Hierarquia compacta do mesmo cabeçalho; não transformar link externo em uma métrica interna.                                                                                                                                          |
+| Editor de publicação  | Rascunho, prévia, confirmação de publicação e proteção ao descarte                | Ordem dos campos, data/hora, preview fiel, foco e teclado. Não adicionar novas etapas desnecessárias para uma edição simples.                                                                                                         |
+| Editor de desafio     | Link opcional, limites e confirmação de arquivamento                              | Datas amigáveis e teclado. As proteções de descarte já existem.                                                                                                                                                                       |
+| Página não encontrada | Mensagem curta com saída clara                                                    | Voltar ao início sempre leva à apresentação (`app/+not-found.tsx:9`); se houver sessão, levar ao Início da integrante.                                                                                                                |
+| Shell e abas          | Cinco destinos com rótulos, troca sem slide e safe area superior                  | Três ícones de abas são variações de círculos (`app/(tabs)/_layout.tsx:31`); diferenciar com desenhos simples do mesmo conjunto, sem remover os rótulos. Fonte ampliada, tab bar de 72px e inset inferior exigem dispositivo (`:21`). |
 
 ## Acessibilidade, motion e superfície web
 
@@ -131,3 +131,30 @@ O HTML exportado local em `dist/index.html` contém viewport com `width=device-w
 - Redução de movimento ligada: conteúdo aparece imediatamente e progresso continua compreensível. Nas listas grandes, medir rolagem antes de trocar componentes ou adicionar bibliotecas.
 
 Não rodei build nem testes novos: esta revisão não mudou o produto e não substitui os testes já executados na publicação. Builds nativos, modo instalado, teclado físico e comportamento dos insets inferiores ficam explicitamente não validados.
+
+## Revisão e ajustes de interface — 17/10/2026
+
+Nesta rodada houve implementação, a pedido de Rafa, preservando a identidade e os fluxos existentes.
+
+- Apresentação: retrato encostado no cabeçalho, máscara de transparência gradual no trecho inferior, card sobreposto em 56 px no celular, título “Bem-vinda ao ELEVA” e pilares em linha. O PNG original permanece intacto e o parallax conserva a preferência por movimento reduzido.
+- Componentes compartilhados: títulos dos cards com escala mais contida, metadados de 14 px, títulos de seção flexíveis, ações limitadas à largura disponível e margens laterais de 20 px.
+- Formulários de acesso, cadastro, recuperação, confirmação, plano e perfil: largura máxima de 560 px. Recuperação, confirmação e página inexistente têm espaçamento explícito entre os elementos. Login distingue ações principais de recuperação e reenvio.
+- Leitura de conteúdo, encontro e conversa: coluna limitada a 728 px. Data do encontro na home pode ceder espaço à ilustração.
+- Abas: rótulos personalizados permitem duas linhas sem reticências; a altura acompanha telas estreitas e escala de fonte.
+
+### Evidência desta rodada
+
+Revisão de código abrangeu todas as rotas em app/, componentes compartilhados, navegação e editores administrativos. Navegador Chromium em viewport simulada, sem aparelho físico:
+
+| Área                                                                              | Verificação                                                                                                                           |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Apresentação                                                                      | Imagem e degradê em 390 px e desktop 1280 px; pilares com a mesma coordenada vertical em 320 px; sem overflow horizontal do documento |
+| Login                                                                             | Screenshot em 320 px, ações de recuperação visíveis e hierarquia revista                                                              |
+| Início, Aprender e Viver                                                          | Screenshots em 320 px, cards, títulos, encontro e navegação                                                                           |
+| Conteúdo e encontro                                                               | Navegação real a partir dos cards; texto e ações presentes                                                                            |
+| Conectar                                                                          | Estado vazio e formulário de publicação sem enviar dados                                                                              |
+| Meu ELEVA e edição                                                                | Screenshot, campos e rótulo completo em duas linhas                                                                                   |
+| Administração                                                                     | Screenshot da lista e editor de conteúdo em 320 px; abas de calendário/desafios e busca de integrantes                                |
+| Cadastro, confirmação, recuperação, plano, convite, conversa e página inexistente | Revisão de código e componentes; não houve percurso visual completo de cada estado                                                    |
+
+As telas restritas foram abertas em cópia temporária local, com o repositório de demonstração e sem conexão ao Supabase. Nenhum dado de produção foi alterado. A cópia de demonstração não faz parte do commit. Teclado virtual, VoiceOver/TalkBack, Safari em iPhone e Android físicos continuam fora desta validação.

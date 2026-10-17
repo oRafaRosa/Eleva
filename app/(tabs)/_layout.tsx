@@ -1,5 +1,5 @@
 import { Tabs, Redirect } from "expo-router";
-import { useWindowDimensions } from "react-native";
+import { Text, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { TabIcon } from "../../src/components/TabIcon";
 import { useEleva } from "../../src/state/AppProvider";
@@ -9,7 +9,7 @@ export default function TabsLayout() {
   const { user, sessionReady, loading, error, refresh, authStatus } =
     useEleva();
   const insets = useSafeAreaInsets();
-  const { fontScale } = useWindowDimensions();
+  const { fontScale, width } = useWindowDimensions();
   if (!sessionReady || (loading && !user)) return <Loading />;
   if (!user && error && (authStatus === "unknown" || authStatus === "verified"))
     return (
@@ -30,7 +30,7 @@ export default function TabsLayout() {
           backgroundColor: colors.ivory,
           borderTopColor: colors.line,
           height:
-            Math.max(72, Math.ceil(64 * fontScale)) +
+            Math.max(width < 360 ? 84 : 72, Math.ceil(76 * fontScale)) +
             Math.max(8, insets.bottom),
           paddingTop: 9,
           paddingBottom: Math.max(8, insets.bottom),
@@ -57,6 +57,19 @@ export default function TabsLayout() {
           name={name}
           options={{
             title,
+            tabBarLabel: ({ color }) => (
+              <Text
+                style={{
+                  fontFamily: fonts.medium,
+                  fontSize: 12,
+                  lineHeight: 18,
+                  color,
+                  textAlign: "center",
+                }}
+              >
+                {title}
+              </Text>
+            ),
             tabBarIcon: ({ color, focused }) => (
               <TabIcon name={name} color={color} selected={focused} />
             ),

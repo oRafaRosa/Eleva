@@ -14,6 +14,7 @@ import { router } from "expo-router";
 import { Body, Title, Button } from "../src/components/ui";
 import { colors, fonts } from "../src/theme";
 import { BrandLogo } from "../src/components/BrandLogo";
+import { FoundersPortrait } from "../src/components/public/FoundersPortrait";
 import JoinForm from "../src/components/public/JoinForm";
 import { clubLinks } from "../src/components/public/links";
 
@@ -109,9 +110,9 @@ export default function Welcome() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
       >
-        <View style={[styles.content, { paddingTop: insets.top }]}>
+        <View style={styles.content}>
           <View style={styles.header}>
-            <BrandLogo width={wide ? 190 : 145} club />
+            <BrandLogo width={wide ? 190 : width < 360 ? 120 : 145} club />
             <View style={{ maxWidth: wide ? 220 : 150 }}>
               <Button
                 secondary
@@ -122,19 +123,18 @@ export default function Welcome() {
           </View>
           <View style={[styles.hero, wide && styles.heroWide]}>
             <View style={[styles.portraitFrame, wide && styles.portraitWide]}>
-              <Animated.Image
+              <Animated.View
                 testID="landing-portrait"
-                source={require("../assets/brand/founders-original.png")}
-                accessibilityLabel="As fundadoras do ELEVA the club"
-                resizeMode="contain"
                 style={[styles.portrait, portraitMotion]}
-              />
+              >
+                <FoundersPortrait />
+              </Animated.View>
             </View>
             <View style={[styles.heroCopy, wide && styles.heroCopyWide]}>
               <Title
                 style={{ fontSize: wide ? 54 : 43, lineHeight: wide ? 56 : 46 }}
               >
-                Bem-vinda ao ELEVA the club.
+                Bem-vinda ao ELEVA
               </Title>
               <Body style={{ marginTop: 20 }}>
                 Experiências, conexões e desenvolvimento.
@@ -180,7 +180,7 @@ export default function Welcome() {
               Porque quando uma mulher se eleva, tudo ao seu redor também se
               transforma.
             </Body>
-            <View style={[styles.pillars, wide && { flexDirection: "row" }]}>
+            <View style={styles.pillars} testID="landing-pillars">
               {["Corpo", "Mente", "Espírito"].map((label) => (
                 <Text key={label} style={styles.pillar}>
                   {label}
@@ -254,50 +254,61 @@ const styles = StyleSheet.create({
   portrait: { width: "100%", height: "100%" },
   heroWide: {
     flexDirection: "row",
-    alignItems: "flex-end",
-    marginHorizontal: 24,
+    alignItems: "center",
   },
-  heroCopyWide: { flex: 1, marginHorizontal: 0, marginBottom: 0, padding: 32 },
+  heroCopyWide: { flex: 1, marginHorizontal: 24, marginTop: 0, padding: 32 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 16,
+    gap: 12,
     paddingVertical: 18,
     paddingHorizontal: 20,
-    backgroundColor: "rgba(251,247,243,0.94)",
+    backgroundColor: colors.ivory,
+    zIndex: 2,
     flexWrap: "wrap",
   },
-  hero: { marginTop: 24 },
+  hero: { marginTop: 0 },
   heroCopy: {
-    padding: 28,
+    padding: 24,
+    marginTop: -56,
+    zIndex: 1,
     marginHorizontal: 20,
     justifyContent: "center",
-    backgroundColor: "rgba(251,247,243,0.95)",
+    backgroundColor: "rgba(251,247,243,0.97)",
   },
   about: {
     overflow: "hidden",
     alignSelf: "center",
     marginTop: 40,
-    padding: 28,
+    padding: 24,
     gap: 20,
-    backgroundColor: "rgba(251,247,243,0.95)",
+    backgroundColor: "rgba(251,247,243,0.97)",
     marginHorizontal: 20,
   },
   seal: { width: 80, height: 80, marginBottom: 4 },
-  pillars: { gap: 16, marginTop: 16, flexWrap: "wrap" },
+  pillars: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 8,
+    flexWrap: "wrap",
+    alignItems: "center",
+  },
   pillar: {
     fontFamily: fonts.serif,
-    fontSize: 30,
+    fontSize: 24,
+    lineHeight: 30,
     color: colors.burgundy,
     flexGrow: 1,
+    flexShrink: 1,
+    textAlign: "center",
   },
   section: {
-    padding: 28,
+    padding: 24,
     alignSelf: "center",
     marginTop: 40,
     marginHorizontal: 20,
-    backgroundColor: "rgba(251,247,243,0.95)",
+    backgroundColor: "rgba(251,247,243,0.97)",
     borderBottomWidth: 1,
     borderColor: colors.line,
     gap: 20,
@@ -313,10 +324,10 @@ const styles = StyleSheet.create({
   },
   footer: {
     gap: 22,
-    padding: 28,
+    padding: 24,
     alignSelf: "center",
     marginTop: 40,
     marginHorizontal: 20,
-    backgroundColor: "rgba(251,247,243,0.95)",
+    backgroundColor: "rgba(251,247,243,0.97)",
   },
 });

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { View } from "react-native";
 import { router } from "expo-router";
 import { Page, Body, Field, Button, Empty } from "../src/components/ui";
 import { supabase } from "../src/services";
@@ -31,17 +32,17 @@ export default function ResetPassword() {
     }
   }
   return (
-    <Page back backHref="/login" title="Criar outra senha">
+    <Page layout="form" back backHref="/login" title="Criar outra senha">
       {saved ? (
-        <>
+        <View style={{ gap: 20 }}>
           <Body>Sua senha foi atualizada.</Body>
           <Button
             label="Continuar"
             onPress={() => router.replace("/(tabs)/home")}
           />
-        </>
+        </View>
       ) : (
-        <>
+        <View style={{ gap: 20 }}>
           <Body>
             Abra esta página pelo link de recuperação enviado ao seu e-mail.
           </Body>
@@ -67,7 +68,7 @@ export default function ResetPassword() {
             disabled={busy}
             onPress={() => void save()}
           />
-        </>
+        </View>
       )}
     </Page>
   );

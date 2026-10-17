@@ -72,7 +72,7 @@ export default function Login() {
     }
   }
   return (
-    <Page back backHref="/" title="Entrar na ELEVA">
+    <Page layout="form" back backHref="/" title="Entrar na ELEVA">
       <View style={{ gap: 20 }}>
         <Field
           label="E-mail"
@@ -112,13 +112,13 @@ export default function Login() {
         />
         <Button
           label="Esqueci minha senha"
-          secondary
+          tertiary
           disabled={busy}
           onPress={() => void submit("reset")}
         />
         <Button
           label="Reenviar confirmação de e-mail"
-          secondary
+          tertiary
           disabled={busy}
           onPress={() => void submit("resend")}
         />

@@ -81,7 +81,7 @@ export default function Event() {
   }
   if (!sessionReady || (loading && !user))
     return (
-      <Page back>
+      <Page layout="reading" back>
         <Loading />
       </Page>
     );

@@ -18,7 +18,7 @@ export default function Plan() {
     }
   }
   return (
-    <Page title="Seu próximo passo na ELEVA">
+    <Page layout="form" title="Seu próximo passo na ELEVA">
       <View style={{ gap: 24 }}>
         <Body muted>
           Olá, {user?.full_name.split(" ")[0] || "bem-vinda"}. Sua conta está no

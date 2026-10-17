@@ -34,7 +34,7 @@ export default function Content() {
   const item = publications.find((p) => p.id === id);
   if (!sessionReady || (loading && !user))
     return (
-      <Page back>
+      <Page layout="reading" back>
         <Loading />
       </Page>
     );

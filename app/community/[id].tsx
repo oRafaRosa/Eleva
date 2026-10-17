@@ -32,7 +32,7 @@ export default function CommunityPost() {
   if (!sessionReady || (appLoading && !user)) return <Loading />;
   if (!user && error && (authStatus === "unknown" || authStatus === "verified"))
     return (
-      <Page back backHref="/(tabs)/connect">
+      <Page layout="reading" back backHref="/(tabs)/connect">
         <ErrorState text={error} onRetry={refresh} />
       </Page>
     );
@@ -62,7 +62,7 @@ function CommunityPostBody({ id }: { id: string }) {
   if (!user) return null;
   const topic = topics.find((t) => t.id === id);
   return (
-    <Page back backHref="/(tabs)/connect" onBack={leave}>
+    <Page layout="reading" back backHref="/(tabs)/connect" onBack={leave}>
       {!!notice && (
         <View accessibilityLiveRegion="polite" style={{ marginVertical: 12 }}>
           <Body>{notice}</Body>
