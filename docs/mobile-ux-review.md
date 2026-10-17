@@ -158,3 +158,7 @@ Revisão de código abrangeu todas as rotas em app/, componentes compartilhados,
 | Cadastro, confirmação, recuperação, plano, convite, conversa e página inexistente | Revisão de código e componentes; não houve percurso visual completo de cada estado                                                    |
 
 As telas restritas foram abertas em cópia temporária local, com o repositório de demonstração e sem conexão ao Supabase. Nenhum dado de produção foi alterado. A cópia de demonstração não faz parte do commit. Teclado virtual, VoiceOver/TalkBack, Safari em iPhone e Android físicos continuam fora desta validação.
+
+### Ajuste de posição após os prints de Rafa
+
+O card de boas-vindas passou a ficar a 64 px do topo do retrato no desktop, em vez de centralizado verticalmente. No celular, a sobreposição acompanha 22% da altura da foto, coincidindo com o início da máscara em 78%; substitui os 56 px fixos anteriores. Conferido no navegador em 1280 px e 390 px. Em 390 px, início do degradê e topo do card coincidem em 565,53 px, sem overflow horizontal. Typecheck e build web passaram.

@@ -33,6 +33,8 @@ export default function Welcome() {
   const wide = width > 900;
   const insets = useSafeAreaInsets();
   const panelWidth = Math.min(width - 40, 760);
+  // The portrait fade starts at 78% of its height (width × 1.5).
+  const portraitOverlap = Math.min(width, 1120) * 1.5 * 0.22;
   const systemReducedMotion = useReducedMotion();
   const [reducedMotion, setReducedMotion] = useState(systemReducedMotion);
   const scrollY = useSharedValue(0);
@@ -130,7 +132,12 @@ export default function Welcome() {
                 <FoundersPortrait />
               </Animated.View>
             </View>
-            <View style={[styles.heroCopy, wide && styles.heroCopyWide]}>
+            <View
+              style={[
+                styles.heroCopy,
+                wide ? styles.heroCopyWide : { marginTop: -portraitOverlap },
+              ]}
+            >
               <Title
                 style={{ fontSize: wide ? 54 : 43, lineHeight: wide ? 56 : 46 }}
               >
@@ -254,9 +261,9 @@ const styles = StyleSheet.create({
   portrait: { width: "100%", height: "100%" },
   heroWide: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
-  heroCopyWide: { flex: 1, marginHorizontal: 24, marginTop: 0, padding: 32 },
+  heroCopyWide: { flex: 1, marginHorizontal: 24, marginTop: 64, padding: 32 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -271,7 +278,6 @@ const styles = StyleSheet.create({
   hero: { marginTop: 0 },
   heroCopy: {
     padding: 24,
-    marginTop: -56,
     zIndex: 1,
     marginHorizontal: 20,
     justifyContent: "center",
