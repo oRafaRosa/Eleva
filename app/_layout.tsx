@@ -12,6 +12,7 @@ import { SourceSans3_400Regular } from "@expo-google-fonts/source-sans-3/400Regu
 import { SourceSans3_600SemiBold } from "@expo-google-fonts/source-sans-3/600SemiBold";
 import { SourceSans3_700Bold } from "@expo-google-fonts/source-sans-3/700Bold";
 import { ElevaProvider } from "../src/state/AppProvider";
+import { AccessBoundary } from "../src/components/AccessBoundary";
 import { colors } from "../src/theme";
 
 export default function RootLayout() {
@@ -37,6 +38,9 @@ export default function RootLayout() {
           <ElevaProvider>
             <StatusBar style="dark" />
             <Stack
+              screenLayout={({ children }) => (
+                <AccessBoundary>{children}</AccessBoundary>
+              )}
               screenOptions={{
                 headerShown: false,
                 contentStyle: { backgroundColor: colors.ivory },

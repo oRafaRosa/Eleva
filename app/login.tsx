@@ -1,40 +1,65 @@
-import { useState, useRef } from "react";
+import React, { useRef, useState } from "react";
 import { View, TextInput } from "react-native";
-import { router } from "expo-router";
-import {
-  Page,
-  Body,
-  Title,
-  Field,
-  Button,
-  Empty,
-  s,
-} from "../src/components/ui";
+import { router, Redirect } from "expo-router";
+import { Page, Body, Button, Field, Empty } from "../src/components/ui";
 import { useEleva } from "../src/state/AppProvider";
-import { isBackendConfigured } from "../src/services";
-import type { DemoAccount } from "../src/services/demoRepository";
-import { colors } from "../src/theme";
-
+import { supabase } from "../src/services";
+import { production } from "../src/services/production";
+import { validateCredentials, authError } from "../src/services/authValidation";
 export default function Login() {
-  const { login, enterDemo, authStatus, error: accessError } = useEleva();
+  const { login, user, loading } = useEleva();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const lock = useRef(false);
+  const [message, setMessage] = useState("");
   const passwordRef = useRef<TextInput>(null);
-  async function submit() {
+  const lock = useRef(false);
+  if (user && !loading)
+    return (
+      <Redirect
+        href={
+          user.banned
+            ? "/plan"
+            : user.plan === "free"
+              ? "/plan"
+              : "/(tabs)/home"
+        }
+      />
+    );
+  async function submit(action: "login" | "reset" | "resend") {
     if (lock.current) return;
-    if (!email.trim() || !password) {
-      setError("Preencha o e-mail e a senha para entrar.");
-      return;
-    }
-    lock.current = true;
-    setBusy(true);
     setError("");
+    setMessage("");
     try {
-      await login(email.trim(), password);
-      router.replace("/(tabs)/home");
+      const safeEmail = validateCredentials(
+        email,
+        action === "login" ? password : undefined,
+      );
+      lock.current = true;
+      setBusy(true);
+      if (action === "login") {
+        await login(safeEmail, password);
+      } else {
+        if (!supabase)
+          throw new Error("Não foi possível conectar. Tente novamente.");
+        const result =
+          action === "reset"
+            ? await supabase.auth.resetPasswordForEmail(safeEmail, {
+                redirectTo: `${production.siteUrl}/reset-password/`,
+              })
+            : await supabase.auth.resend({
+                type: "signup",
+                email: safeEmail,
+                options: { emailRedirectTo: `${production.siteUrl}/auth/` },
+              });
+        if (result.error) throw new Error(authError(result.error));
+        setMessage(
+          action === "reset"
+            ? "Se houver uma conta para este e-mail, você receberá um link para criar outra senha."
+            : "Se houver um cadastro pendente, você receberá um e-mail de confirmação.",
+        );
+      }
     } catch (e) {
       setError(
         e instanceof Error
@@ -46,84 +71,57 @@ export default function Login() {
       setBusy(false);
     }
   }
-  async function preview(account: DemoAccount) {
-    if (lock.current) return;
-    lock.current = true;
-    setBusy(true);
-    setError("");
-    try {
-      await enterDemo(account);
-      router.replace(account === "rebeca" ? "/admin" : "/(tabs)/home");
-    } catch {
-      setError("Não foi possível entrar. Tente novamente.");
-    } finally {
-      lock.current = false;
-      setBusy(false);
-    }
-  }
   return (
     <Page back backHref="/" title="Entrar na ELEVA">
-      {authStatus === "denied" && !!accessError && <Empty text={accessError} />}
-      {isBackendConfigured && (
-        <View style={{ gap: 20, marginBottom: 30 }}>
-          <Body muted>Use o e-mail cadastrado pela equipe.</Body>
-          <Field
-            label="E-mail"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            autoComplete="email"
-            keyboardType="email-address"
-            placeholder="voce@email.com"
-            returnKeyType="next"
-            submitBehavior="submit"
-            onSubmitEditing={() => passwordRef.current?.focus()}
-          />
-          <Field
-            label="Senha"
-            ref={passwordRef}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoComplete="current-password"
-            placeholder="Sua senha"
-            returnKeyType="go"
-            onSubmitEditing={() => void submit()}
-          />
-          <Button
-            label={busy ? "Entrando…" : "Entrar"}
-            onPress={() => void submit()}
-            disabled={busy}
-          />
-        </View>
-      )}
-      <Body muted style={{ marginTop: 12, marginBottom: 22 }}>
-        Preparei esta prévia para vocês testarem o app. Escolham um acesso, sem
-        senha. Os conteúdos e as ações são exemplos.
-      </Body>
-      <View style={{ gap: 16 }}>
-        <View
-          style={[s.panel, { backgroundColor: colors.pink, borderWidth: 0 }]}
-        >
-          <Title small>Jeice</Title>
-          <Body>Integrante</Body>
-          <Button
-            label="Entrar como Jeice"
-            disabled={busy}
-            onPress={() => void preview("marina")}
-          />
-        </View>
-        <View style={s.panel}>
-          <Title small>Rebeca</Title>
-          <Body>Administradora</Body>
-          <Button
-            secondary
-            label="Entrar como Rebeca"
-            disabled={busy}
-            onPress={() => void preview("rebeca")}
-          />
-        </View>
+      <View style={{ gap: 20 }}>
+        <Field
+          label="E-mail"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          placeholder="voce@email.com"
+          returnKeyType="next"
+          submitBehavior="submit"
+          onSubmitEditing={() => passwordRef.current?.focus()}
+        />
+        <Field
+          label="Senha"
+          ref={passwordRef}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          autoComplete="current-password"
+          placeholder="Sua senha"
+          returnKeyType="go"
+          onSubmitEditing={() => void submit("login")}
+        />
         {!!error && <Empty text={error} />}
+        {!!message && <Body>{message}</Body>}
+        <Button
+          label={busy ? "Aguarde…" : "Entrar"}
+          disabled={busy}
+          onPress={() => void submit("login")}
+        />
+        <Button
+          label="Criar minha conta"
+          secondary
+          disabled={busy}
+          onPress={() => router.push("/signup")}
+        />
+        <Button
+          label="Esqueci minha senha"
+          secondary
+          disabled={busy}
+          onPress={() => void submit("reset")}
+        />
+        <Button
+          label="Reenviar confirmação de e-mail"
+          secondary
+          disabled={busy}
+          onPress={() => void submit("resend")}
+        />
       </View>
     </Page>
   );

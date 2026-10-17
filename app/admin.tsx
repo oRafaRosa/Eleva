@@ -353,6 +353,11 @@ export default function AdminScreen() {
       >
         <Text style={styles.navText}>Desafios</Text>
       </Pressable>
+      <Button
+        label="Usuários e planos"
+        secondary
+        onPress={() => router.push("/members")}
+      />
       <View style={{ height: 20 }} />
       <Button
         label="Ver plataforma"
@@ -389,6 +394,11 @@ export default function AdminScreen() {
                 <Text style={styles.platformLink}>Ver plataforma</Text>
               </Pressable>
             </View>
+            <Button
+              label="Usuários e planos"
+              secondary
+              onPress={() => router.push("/members")}
+            />
             <View style={styles.mobileTabs}>
               {(
                 [

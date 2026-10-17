@@ -17,6 +17,8 @@ export interface Activity {
 export interface Access {
   role: "admin" | "member";
   active: boolean;
+  plan?: "free" | "pro";
+  banned?: boolean;
 }
 export interface ElevaRepository {
   listPublications(): Promise<Publication[]>;

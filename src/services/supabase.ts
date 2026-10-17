@@ -1,18 +1,20 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { authStorage } from "./authStorage";
 import { createClient } from "@supabase/supabase-js";
 import { AppState, Platform } from "react-native";
 
-const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
-const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+import { production } from "./production";
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL || production.url;
+const key =
+  process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || production.publishableKey;
 export const isBackendConfigured = Boolean(url && key);
 export const supabase = isBackendConfigured
   ? createClient(url!, key!, {
       auth: {
-        storage: AsyncStorage,
+        storage: authStorage,
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: Platform.OS === "web",
-        flowType: "pkce",
+        flowType: Platform.OS === "web" ? "implicit" : "pkce",
       },
     })
   : null;

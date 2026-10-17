@@ -20,6 +20,6 @@
     "android": {
       "package": "com.eleva.club"
     },
-    "plugins": ["expo-router", "expo-font"]
+    "plugins": ["expo-router", "expo-font", "expo-secure-store"]
   }
 }

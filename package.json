@@ -18,6 +18,7 @@
     "expo-image-picker": "~57.0.20",
     "expo-linking": "~57.0.12",
     "expo-router": "~57.0.26",
+    "expo-secure-store": "57.0.4",
     "expo-status-bar": "57.0.1",
     "motion": "^14.2.0",
     "react": "19.2.3",
@@ -49,7 +50,7 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "format": "prettier --write app src tests docs *.json *.md",
     "format:check": "prettier --check app src tests docs *.json *.md",
-    "test:sql": "node supabase/tests/run-security.mjs && node supabase/tests/run-profile-security.mjs",
+    "test:sql": "node supabase/tests/run-security.mjs && node supabase/tests/run-profile-security.mjs && node supabase/tests/run-membership-security.mjs",
     "build:pages": "node scripts/build-pages.mjs"
   },
   "private": true

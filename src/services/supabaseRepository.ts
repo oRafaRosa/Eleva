@@ -257,15 +257,19 @@ export function createSupabaseRepository(
     async getAccess() {
       const { data, error } = await client
         .from("user_access")
-        .select("role,active,expires_at")
+        .select("role,active,expires_at,plan,banned")
         .eq("user_id", await currentId())
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
       return {
         role: data.role,
+        plan: data.plan,
+        banned: data.banned,
         active:
+          !data.banned &&
           data.active &&
+          (data.role === "admin" || data.plan === "pro") &&
           (!data.expires_at || Date.parse(data.expires_at) > Date.now()),
       } as Access;
     },

@@ -6,7 +6,7 @@ import React, {
   useState,
   useRef,
 } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, AppState, Platform } from "react-native";
 import { getRepository, isBackendConfigured, supabase } from "../services";
 import type { ElevaRepository } from "../services/repository";
 import type {
@@ -23,6 +23,7 @@ import {
   saveDemoSession,
   type DemoAccount,
 } from "../services/demoRepository";
+import { authError } from "../services/authValidation";
 import { colors, fonts } from "../theme";
 import {
   verifyMember,
@@ -35,7 +36,11 @@ import {
   SessionGateError,
   type AuthStatus,
 } from "../services/memberLoading";
-type User = Profile & { role: "member" | "admin" };
+type User = Profile & {
+  role: "member" | "admin";
+  plan?: "free" | "pro";
+  banned?: boolean;
+};
 interface Context {
   repository: ElevaRepository;
   publications: Publication[];
@@ -151,12 +156,28 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
         },
         onAccess(access, id) {
           if (userRef.current?.id === id)
-            applyUser({ ...userRef.current, role: access.role });
+            applyUser({
+              ...userRef.current,
+              role: access.role,
+              plan: access.active ? "pro" : "free",
+              banned: Boolean(access.banned),
+            });
         },
       });
       assertCurrent();
       applyUser(verified);
       setAuthStatus("verified");
+      if (verified.banned || verified.plan === "free") {
+        setPublications([]);
+        setEvents([]);
+        setChallenges([]);
+        setSteps([]);
+        setFavorites([]);
+        setCompletions([]);
+        setRegistrations([]);
+        setStepCompletions([]);
+        return;
+      }
       const loaded = await loadMemberContent(repository);
       assertCurrent();
       setPublications(loaded.publications);
@@ -193,7 +214,7 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     readDemoSession()
       .then((account) => {
         if (!alive) return;
-        if (account) {
+        if (account && !isBackendConfigured) {
           setDemoAccount(account);
           setDemo(true);
         }
@@ -246,6 +267,24 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
       data.subscription.unsubscribe();
     };
   }, [repository, isDemo]);
+  useEffect(() => {
+    if (isDemo || !sessionReady) return;
+    const recheck = () => {
+      void refresh().catch(() => {});
+    };
+    const listener = AppState.addEventListener("change", (state) => {
+      if (state === "active") recheck();
+    });
+    const timer = setInterval(() => {
+      if (subjectRef.current && AppState.currentState === "active") recheck();
+    }, 60000);
+    if (Platform.OS === "web") window.addEventListener("focus", recheck);
+    return () => {
+      listener.remove();
+      clearInterval(timer);
+      if (Platform.OS === "web") window.removeEventListener("focus", recheck);
+    };
+  }, [repository, isDemo, sessionReady]);
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 4500);
@@ -318,6 +357,8 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
     refresh,
     sessionReady,
     async enterDemo(account) {
+      if (isBackendConfigured)
+        throw new Error("Use seu e-mail e senha para entrar.");
       await saveDemoSession(account);
       refreshVersion.current++;
       invalidateIdentity();
@@ -339,7 +380,11 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
         password,
       });
       if (error)
-        throw new Error("Confira o e-mail e a senha e tente novamente.");
+        throw new Error(
+          error.code === "invalid_credentials"
+            ? "Confira o e-mail e a senha e tente novamente."
+            : authError(error),
+        );
       await saveDemoSession(null);
       setDemoAccount(null);
       setDemo(false);
@@ -373,7 +418,7 @@ export function ElevaProvider({ children }: { children: React.ReactNode }) {
           userRef.current?.id !== currentUser.id
         )
           throw new StaleSessionError();
-        applyUser({ ...updated, role: userRef.current.role });
+        applyUser({ ...userRef.current, ...updated });
         setNotice("Perfil salvo.");
       } catch (e) {
         if (epoch === sessionEpoch.current && invalidAuthSession(e)) {

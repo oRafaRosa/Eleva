@@ -12,4 +12,4 @@ Expo e TypeScript compartilham o cliente web/nativo. Supabase fornece autentica�
 
 ## Integrações verificadas
 
-GitHub: oRafaRosa/Eleva. Figma: MCzuXlmEabOjmapLqIRq3c. Vercel recusou criação de projeto por permissão 403. Nenhum projeto ELEVA no Supabase conectado. Migrações não foram aplicadas a projetos de outros produtos.
+GitHub: oRafaRosa/Eleva. Figma: MCzuXlmEabOjmapLqIRq3c. Vercel recusou criação de projeto por permissão 403. Supabase ELEVA criado na organização Eleva the club, região São Paulo, ref `xtplovndgwimijqjfdmn`. Migrações aplicadas. Produção usa autenticação real; contas novas FREE acessam contratação pelo WhatsApp, PRO liberado manualmente por administradoras. Banimento e permissões são protegidos por RLS. Configuração de e-mail no painel e primeiros e-mails admin ainda pendentes; detalhes em docs/production.md.

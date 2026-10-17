@@ -40,6 +40,11 @@ for (const route of [
   "login",
   "admin",
   "profile-edit",
+  "plan",
+  "signup",
+  "auth",
+  "reset-password",
+  "members",
 ]) {
   mkdirSync(`dist/${route}`, { recursive: true });
   writeFileSync(`dist/${route}/index.html`, html);

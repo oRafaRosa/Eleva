@@ -1,12 +1,12 @@
 import type { Profile } from "../types/domain";
 import type { Access, ElevaRepository } from "./repository";
-export type MemberUser = Profile & { role: "member" | "admin" };
+export type MemberUser = Profile & {
+  role: "member" | "admin";
+  plan?: "free" | "pro";
+  banned?: boolean;
+};
 export type AuthStatus =
-  | "checking"
-  | "verified"
-  | "unknown"
-  | "signed_out"
-  | "denied";
+  "checking" | "verified" | "unknown" | "signed_out" | "denied";
 export class SessionGateError extends Error {
   constructor(
     public reason: "signed_out" | "denied",
@@ -79,7 +79,7 @@ export async function verifyMember(request: {
   request.onSubject(id);
   const access = await request.getAccess();
   request.assertCurrent();
-  if (!access?.active)
+  if (!access || (!access.active && !access.plan))
     throw new SessionGateError(
       "denied",
       "Seu acesso ainda não está ativo. Fale com a equipe ELEVA.",
@@ -89,7 +89,12 @@ export async function verifyMember(request: {
   request.assertCurrent();
   if (!profile || profile.id !== id)
     throw new Error("Não foi possível carregar seu perfil. Tente novamente.");
-  return { ...profile, role: access.role };
+  return {
+    ...profile,
+    role: access.role,
+    plan: access.active ? "pro" : "free",
+    banned: Boolean(access.banned),
+  };
 }
 export async function loadMemberContent(repo: ElevaRepository) {
   const [publications, events, challenges, activity] = await Promise.all([
