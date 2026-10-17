@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image, Pressable, Text, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { router } from "expo-router";
 import {
   Page,
@@ -12,7 +12,8 @@ import {
   ErrorState,
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
-import { colors, fonts } from "../../src/theme";
+import { colors } from "../../src/theme";
+import { ProfileAvatar } from "../../src/components/ProfileAvatar";
 export default function Profile() {
   const { user, favorites, publications, logout, actionBusy, error, refresh } =
     useEleva();
@@ -46,35 +47,12 @@ export default function Profile() {
           marginBottom: 16,
         }}
       >
-        <View
-          style={{
-            width: 76,
-            height: 76,
-            borderRadius: 38,
-            overflow: "hidden",
-            backgroundColor: colors.pink,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {user?.avatar_url ? (
-            <Image
-              source={{ uri: user.avatar_url }}
-              accessibilityLabel="Sua foto de perfil"
-              style={{ width: 76, height: 76 }}
-            />
-          ) : (
-            <Text
-              style={{
-                fontFamily: fonts.serif,
-                fontSize: 34,
-                color: colors.burgundy,
-              }}
-            >
-              {user?.full_name.slice(0, 1).toUpperCase()}
-            </Text>
-          )}
-        </View>
+        <ProfileAvatar
+          name={user?.full_name ?? ""}
+          uri={user?.avatar_url}
+          path={user?.avatar_path}
+          size={76}
+        />
         <View style={{ flex: 1, gap: 4 }}>
           <Title small>{user?.full_name}</Title>
           {!!user?.city && <Body muted>{user.city}</Body>}
@@ -85,6 +63,15 @@ export default function Profile() {
         label="Editar perfil"
         onPress={() => router.push("/profile-edit")}
       />
+      <View style={{ marginTop: 8 }}>
+        <Button
+          tertiary
+          label="Ver meu perfil na comunidade"
+          onPress={() => {
+            if (user) router.push(`/people/${user.id}`);
+          }}
+        />
+      </View>
       <View style={{ marginTop: 16 }}>
         <Pressable
           accessibilityRole="button"

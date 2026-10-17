@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Alert, Image, Platform, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Image,
+  Platform,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { usePreventRemove } from "expo-router/react-navigation";
 import { Redirect, router, useNavigation } from "expo-router";
@@ -32,6 +40,9 @@ export default function EditProfile() {
   const navigation = useNavigation();
   const [name, setName] = useState(user?.full_name ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
+  const [whatsappPublic, setWhatsappPublic] = useState(
+    user?.whatsapp_public ?? false,
+  );
   const [city, setCity] = useState(user?.city ?? "");
   const [photo, setPhoto] = useState<string | null | undefined>(undefined);
   const [error, setError] = useState("");
@@ -45,6 +56,7 @@ export default function EditProfile() {
   const baseline = useRef({
     name: user?.full_name ?? "",
     phone: user?.phone ?? "",
+    whatsappPublic: user?.whatsapp_public ?? false,
     city: user?.city ?? "",
   });
   const allowLeave = useRef(false);
@@ -64,11 +76,13 @@ export default function EditProfile() {
     draftReady &&
     (name !== baseline.current.name ||
       phone !== baseline.current.phone ||
+      whatsappPublic !== baseline.current.whatsappPublic ||
       city !== baseline.current.city ||
       photo !== undefined);
   const draft = {
     name,
     phone,
+    whatsappPublic,
     city,
     ...(photo !== undefined ? { photo } : {}),
   };
@@ -85,10 +99,12 @@ export default function EditProfile() {
     baseline.current = {
       name: user.full_name,
       phone: user.phone ?? "",
+      whatsappPublic: user.whatsapp_public ?? false,
       city: user.city ?? "",
     };
     setName(baseline.current.name);
     setPhone(baseline.current.phone);
+    setWhatsappPublic(baseline.current.whatsappPublic);
     setCity(baseline.current.city);
     setPhoto(undefined);
     AsyncStorage.getItem(draftKey.current)
@@ -105,6 +121,11 @@ export default function EditProfile() {
           decodeAvatar(stored.photo);
         setName(stored.name);
         setPhone(stored.phone);
+        setWhatsappPublic(
+          typeof stored.whatsappPublic === "boolean"
+            ? stored.whatsappPublic
+            : baseline.current.whatsappPublic,
+        );
         setCity(stored.city);
         setPhoto(stored.photo);
       })
@@ -134,7 +155,7 @@ export default function EditProfile() {
         .catch(() => {});
     }, 150);
     return () => clearTimeout(timer);
-  }, [name, phone, city, photo, draftReady, dirty]);
+  }, [name, phone, whatsappPublic, city, photo, draftReady, dirty]);
   useEffect(() => {
     if (Platform.OS !== "web" || typeof window === "undefined") return;
     const beforeUnload = (event: BeforeUnloadEvent) => {
@@ -307,6 +328,7 @@ export default function EditProfile() {
       await updateProfile({
         full_name: name,
         phone,
+        whatsapp_public: whatsappPublic,
         city,
         avatar_base64: photo,
       });
@@ -352,6 +374,7 @@ export default function EditProfile() {
     <Page
       back
       title="Editar perfil"
+      layout="form"
       onBack={() => requestLeave(() => router.replace("/(tabs)/profile"))}
     >
       <View style={{ gap: 24 }}>
@@ -422,7 +445,8 @@ export default function EditProfile() {
         />
         <Field
           ref={phoneRef}
-          label="Telefone"
+          label="WhatsApp"
+          placeholder="(11) 99999-9999"
           value={phone}
           onChangeText={setPhone}
           maxLength={30}
@@ -433,6 +457,33 @@ export default function EditProfile() {
           submitBehavior="submit"
           onSubmitEditing={() => cityRef.current?.focus()}
         />
+        <View style={{ gap: 8 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 16,
+              minHeight: 48,
+            }}
+          >
+            <Body style={{ flex: 1 }}>Mostrar meu WhatsApp no perfil</Body>
+            <Switch
+              accessibilityLabel="Mostrar meu WhatsApp no perfil"
+              value={whatsappPublic}
+              onValueChange={setWhatsappPublic}
+              disabled={busy}
+              trackColor={{ false: colors.controlLine, true: colors.burgundy }}
+            />
+          </View>
+          <Body muted style={{ fontSize: 14 }}>
+            {whatsappPublic
+              ? "Integrantes do clube poderão ver seu número e abrir uma conversa no WhatsApp."
+              : "Seu número não aparece para outras integrantes."}
+          </Body>
+          <Body muted style={{ fontSize: 14 }}>
+            Use DDD. Para números de outros países, inclua +DDI.
+          </Body>
+        </View>
         <Field
           ref={cityRef}
           label="Cidade"

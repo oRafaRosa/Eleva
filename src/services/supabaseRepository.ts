@@ -226,6 +226,9 @@ export function createSupabaseRepository(
         .update({
           full_name: safe.full_name,
           phone: safe.phone,
+          ...(safe.whatsapp_public !== undefined
+            ? { whatsapp_public: safe.whatsapp_public }
+            : {}),
           city: safe.city,
           avatar_path,
         })

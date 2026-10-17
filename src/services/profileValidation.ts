@@ -13,6 +13,20 @@ export function validateProfileUpdate(update: ProfileUpdate): ProfileUpdate {
   if (city && city.length > 100)
     throw new Error("A cidade deve ter até 100 caracteres.");
   const safe: ProfileUpdate = { full_name, phone, city };
+  if (update.whatsapp_public !== undefined) {
+    if (typeof update.whatsapp_public !== "boolean")
+      throw new Error("Confira a visibilidade do WhatsApp.");
+    if (
+      update.whatsapp_public &&
+      (!phone ||
+        phone.replace(/[^0-9]/g, "").length < 10 ||
+        phone.replace(/[^0-9]/g, "").length > 15)
+    )
+      throw new Error(
+        "Preencha o WhatsApp com DDD; para outros países, inclua +DDI.",
+      );
+    safe.whatsapp_public = update.whatsapp_public;
+  }
   if (update.avatar_base64 !== undefined) {
     if (update.avatar_base64 !== null) decodeAvatar(update.avatar_base64);
     safe.avatar_base64 = update.avatar_base64;

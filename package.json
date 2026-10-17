@@ -50,7 +50,7 @@
     "test": "node --import tsx --test tests/*.test.ts",
     "format": "prettier --write app src tests docs *.json *.md",
     "format:check": "prettier --check app src tests docs *.json *.md",
-    "test:sql": "node supabase/tests/run-security.mjs && node supabase/tests/run-profile-security.mjs && node supabase/tests/run-membership-security.mjs",
+    "test:sql": "node supabase/tests/run-security.mjs && node supabase/tests/run-profile-security.mjs && node supabase/tests/run-membership-security.mjs && node supabase/tests/run-community-profiles-security.mjs",
     "build:pages": "node scripts/build-pages.mjs",
     "build:vercel": "node scripts/build-vercel.mjs"
   },

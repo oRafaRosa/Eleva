@@ -1,3 +1,5 @@
+import { router } from "expo-router";
+import { ProfileAvatar } from "../ProfileAvatar";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { Body, Button } from "../ui";
@@ -41,10 +43,31 @@ export function ForumMessageOptions({
           alignItems: "center",
         }}
       >
-        <Body muted style={{ fontSize: 14, flex: 1 }}>
-          {item.author_name} ·{" "}
-          {new Date(item.created_at).toLocaleDateString("pt-BR")}
-        </Body>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Ver perfil de ${item.author_name}`}
+          disabled={item.author_profile_available === false}
+          onPress={() => router.push(`/people/${item.author_id}`)}
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+            minHeight: 48,
+          }}
+        >
+          <ProfileAvatar
+            name={item.author_name}
+            uri={item.author_avatar_url}
+            path={item.author_avatar_path}
+          />
+          <View style={{ flex: 1 }}>
+            <Body style={{ fontSize: 16 }}>{item.author_name}</Body>
+            <Body muted style={{ fontSize: 14 }}>
+              {new Date(item.created_at).toLocaleDateString("pt-BR")}
+            </Body>
+          </View>
+        </Pressable>
         {!item.deleted && (
           <Pressable
             accessibilityRole="button"

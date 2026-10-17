@@ -8,10 +8,7 @@ export type PublicationType =
   | "post";
 export type Pillar = "body" | "mind" | "spirit";
 export type PublicationStatus =
-  | "draft"
-  | "scheduled"
-  | "published"
-  | "archived";
+  "draft" | "scheduled" | "published" | "archived";
 export interface Publication {
   id: string;
   title: string;
@@ -78,17 +75,20 @@ export interface ChallengeStep {
   position: number;
 }
 export interface Profile {
+  created_at?: string;
   id: string;
   full_name: string;
   avatar_path: string | null;
   avatar_url?: string | null;
   phone?: string | null;
+  whatsapp_public?: boolean;
   city?: string | null;
 }
 
 export interface ProfileUpdate {
   full_name: string;
   phone?: string | null;
+  whatsapp_public?: boolean;
   city?: string | null;
   /** JPEG base64, null removes the photo, undefined keeps the existing photo. */
   avatar_base64?: string | null;

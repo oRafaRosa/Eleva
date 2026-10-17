@@ -5,6 +5,11 @@ import type {
   ForumRepository,
 } from "../types/forum";
 import type { DemoStorage } from "./demoRepository";
+import {
+  hydrateForumAuthors,
+  getCommunityProfiles,
+  attachAuthors,
+} from "./communityProfiles";
 const KEY = "eleva:forum:v1";
 const storage: DemoStorage = {
   async getItem(key) {
@@ -65,7 +70,7 @@ export function createDemoForum(
   return {
     async listTopics() {
       const state = await load();
-      return state.topics
+      const topics = state.topics
         .map((topic) => ({
           ...topic,
           like_count: topic.deleted
@@ -81,6 +86,14 @@ export function createDemoForum(
           ).length,
         }))
         .sort((a, b) => b.created_at.localeCompare(a.created_at));
+      return attachAuthors(
+        topics,
+        await getCommunityProfiles(
+          topics.map((t) => t.author_id),
+          true,
+          store,
+        ),
+      );
     },
     async setLike(topicId, liked) {
       const state = await load();
@@ -94,7 +107,17 @@ export function createDemoForum(
       await save(state);
     },
     async listReplies(topicId) {
-      return (await load()).replies.filter((r) => r.topic_id === topicId);
+      const replies = (await load()).replies.filter(
+        (r) => r.topic_id === topicId,
+      );
+      return attachAuthors(
+        replies,
+        await getCommunityProfiles(
+          replies.map((r) => r.author_id),
+          true,
+          store,
+        ),
+      );
     },
     async createTopic(title, body) {
       const topic = {
@@ -184,7 +207,8 @@ export function createForumRepository(options: {
     return (data ?? []) as T[];
   };
   return {
-    listTopics: () => list<ForumTopic>("forum_topic_stats"),
+    listTopics: async () =>
+      hydrateForumAuthors(await list<ForumTopic>("forum_topic_stats")),
     async setLike(topicId, liked) {
       const c = await client();
       const userId = await uid();
@@ -202,7 +226,8 @@ export function createForumRepository(options: {
             .eq("topic_id", topicId);
       if (result.error) throw result.error;
     },
-    listReplies: (id) => list<ForumReply>("forum_replies", id),
+    listReplies: async (id) =>
+      hydrateForumAuthors(await list<ForumReply>("forum_replies", id)),
     async createTopic(title, body) {
       const c = await client();
       const { data, error } = await c

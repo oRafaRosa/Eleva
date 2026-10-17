@@ -54,6 +54,7 @@ export default function RootLayout() {
               <Stack.Screen name="admin" />
               <Stack.Screen name="profile-edit" />
               <Stack.Screen name="community/[id]" />
+              <Stack.Screen name="people/[id]" />
             </Stack>
           </ElevaProvider>
         </SafeAreaView>

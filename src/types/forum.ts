@@ -7,6 +7,9 @@ export interface ForumTopic {
   id: string;
   author_id: string;
   author_name: string;
+  author_avatar_path?: string | null;
+  author_avatar_url?: string | null;
+  author_profile_available?: boolean;
   like_count?: number;
   liked_by_me?: boolean;
   comment_count?: number;
@@ -20,6 +23,9 @@ export interface ForumReply {
   topic_id: string;
   author_id: string;
   author_name: string;
+  author_avatar_path?: string | null;
+  author_avatar_url?: string | null;
+  author_profile_available?: boolean;
   body: string;
   deleted: boolean;
   created_at: string;

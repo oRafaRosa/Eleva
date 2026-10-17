@@ -380,6 +380,9 @@ export function createDemoRepository(
         id: profile.id,
         full_name: safe.full_name,
         phone: safe.phone,
+        whatsapp_public:
+          safe.whatsapp_public ?? profile.whatsapp_public ?? false,
+        created_at: profile.created_at,
         city: safe.city,
         avatar_path: avatar,
         avatar_url: avatar,
