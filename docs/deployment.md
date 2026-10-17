@@ -1,54 +1,25 @@
-# Publicação da ELEVA
+# Publicação da ELEVA na Vercel
 
-A primeira versão usa Expo para exportar o aplicativo web. O Vercel entrega os arquivos de `dist`; Supabase será responsável por autenticação, dados e tarefas do servidor.
+Repositório: `oRafaRosa/Eleva`. Equipe conectada: `orafarosas-projects`, ID `team_cZywE7XZ9eDswWZXKErLw2gJ`. Nome proposto para o projeto novo: `eleva-the-club`.
 
-## Build web
+## Estado
 
-```bash
-npm ci
-npm run build:web
-```
+Em 17/10/2026, o conector recusou criar o projeto com HTTP 403: `You don't have permission to create the project`. Não existe projeto ELEVA nessa equipe, nem credencial de CLI disponível nesta sessão. Nenhum deployment Vercel foi criado. O GitHub Pages permanece ativo até a nova hospedagem estar verificada.
 
-O comando deve gerar `dist/index.html`. Esta configuração considera uma aplicação de página única, com `web.output` igual a `single`. A regra em `vercel.json` permite abrir diretamente uma rota, como `/admin`, sem receber um erro 404.
+## Importação
 
-Se o aplicativo passar a exportar uma página HTML por rota (`web.output: static`), remova a regra de fallback e valide os links diretos novamente.
+Importar o repositório na equipe acima, preset **Other**, Node 24, instalação `npm ci`, build `npm run build:vercel`, saída `dist`. Conectar a branch de produção `main`. Habilitar as variáveis de sistema da Vercel. O script deriva a URL canônica de `VERCEL_PROJECT_PRODUCTION_URL`; `EXPO_PUBLIC_SITE_URL` pode sobrescrevê-la com uma origem HTTPS sem subpasta.
 
-## Ambientes
+O build da Vercel usa caminhos na raiz, preserva os ícones para a Tela de Início e gera a prévia de e-mail com imagens na nova hospedagem. A versão do modelo pronta para copiar ao Supabase fica em `/email/confirmation-template.html`. Essa publicação de arquivo não aplica o modelo ao Auth.
 
-Use uma branch de trabalho para revisão. Publicações de preview permitem revisar o aplicativo sem substituir a versão de produção. Antes de publicar, confira a equipe, o projeto, a branch e o commit.
+A URL e a chave publicável Supabase têm valores padrão em `src/services/production.ts`. Não adicionar chave secreta ou `service_role` ao cliente. A implantação não muda os planos ou permissões do banco.
 
-O repositório de origem é `oRafaRosa/Eleva`. A equipe Vercel disponível nesta sessão é `orafarosas-projects`. Nenhum projeto existia nessa equipe na inspeção inicial de 13/10/2026.
+## Depois da publicação
 
-### Situação da configuração
+1. Verificar status READY, commit correto, página pública, foto completa, login, cadastro, convite e rota interna atualizada diretamente.
+2. Conferir `/site.webmanifest`, `/icons/eleva-seal-180-v2.png` e `/email/confirmation-preview.html`, com imagens carregadas.
+3. Configurar a Site URL e os redirects `/auth/` e `/reset-password/` no Supabase para a origem definitiva. Ainda dependem de acesso ao painel; SMTP próprio e primeiros e-mails admin continuam pendentes.
+4. Atualizar o modelo no Supabase com o endereço novo. Não desativar a hospedagem antiga enquanto algum modelo ativo depender das imagens de lá.
+5. Após a verificação, remover o disparo automático de `.github/workflows/pages.yml` e desativar o Pages nas configurações do repositório, conforme autorizado por Rafa. O repositório continua sendo a fonte de código.
 
-A criação do projeto `eleva` pela conexão Vercel foi recusada com HTTP 403 e a mensagem `You don't have permission to create the project`. O ambiente local também não tinha credenciais da CLI. Por isso, nenhum projeto ou deployment foi criado nesta etapa.
-
-Para concluir a hospedagem, importe `oRafaRosa/Eleva` na equipe correta, selecione o preset **Other** e mantenha os comandos e a pasta de saída de `vercel.json`. Use a branch de revisão para o primeiro preview; deixe a produção para depois da validação.
-
-Depois que houver um projeto, a conexão poderá ser conferida novamente antes de publicar. Não há um arquivo `.vercel/project.json` neste repositório porque ainda não existe um vínculo confirmado.
-
-## Variáveis públicas
-
-As variáveis com prefixo `EXPO_PUBLIC_` ficam acessíveis no aplicativo compilado. Cadastre somente valores que podem ser públicos:
-
-| Variável                               | Uso                                                                 |
-| -------------------------------------- | ------------------------------------------------------------------- |
-| `EXPO_PUBLIC_SUPABASE_URL`             | Endereço do projeto Supabase                                        |
-| `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Chave pública usada em conjunto com as políticas de acesso do banco |
-
-Não inclua chave `service_role`, chave secreta do Supabase, token Vercel ou credenciais de outros serviços no aplicativo. As operações administrativas precisam ser autorizadas no servidor e pelas políticas do banco.
-
-O modo de demonstração deve continuar disponível enquanto o backend não estiver configurado. Antes de permitir dados reais, teste login, permissões de integrante e administradora, publicação agendada e acesso aos arquivos.
-
-## Conferência do preview
-
-- Abrir no Chrome e Safari, em telas de celular e computador.
-- Abrir uma rota interna diretamente e atualizar a página.
-- Verificar o teclado nos formulários e a navegação pelo botão voltar.
-- Confirmar que a preferência de reduzir movimento é respeitada.
-- Confirmar que o modo de demonstração está identificado.
-- Conferir os logs de build e a ausência de credenciais nos arquivos publicados.
-
-## Android e iOS
-
-O build web não gera os aplicativos nativos. Android e iOS serão compilados com EAS Build e enviados às lojas depois da revisão dos fluxos, autenticação, notificações e regras de assinatura. Nenhuma publicação nas lojas está configurada nesta etapa.
+O domínio `elevatheclub.com.br` será conectado após o desenvolvimento. A migração atual não autoriza mudanças de DNS antes dessa etapa já combinada. Builds Android/iOS e publicação nas lojas são separados da hospedagem web.

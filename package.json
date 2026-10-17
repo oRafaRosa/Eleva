@@ -51,7 +51,8 @@
     "format": "prettier --write app src tests docs *.json *.md",
     "format:check": "prettier --check app src tests docs *.json *.md",
     "test:sql": "node supabase/tests/run-security.mjs && node supabase/tests/run-profile-security.mjs && node supabase/tests/run-membership-security.mjs",
-    "build:pages": "node scripts/build-pages.mjs"
+    "build:pages": "node scripts/build-pages.mjs",
+    "build:vercel": "node scripts/build-vercel.mjs"
   },
   "private": true
 }
