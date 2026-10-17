@@ -4,7 +4,7 @@ Assunto: **Confirme seu e-mail | ELEVA the club**.
 
 `confirmation.html` contém o modelo do Supabase. O botão e o link alternativo usam `{{ .ConfirmationURL }}`, sem alterar o token ou o destino de confirmação gerado pelo Auth. A mensagem não concede nem promete acesso PRO.
 
-As imagens oficiais são publicadas em `/Eleva/email/`. A composição usa tabelas, estilos inline, cores de fundo sólidas, fontes de sistema, imagens com texto alternativo e CTA em HTML, para continuar legível quando o cliente bloqueia imagens. A assinatura “the club” preserva a fonte Allura do aplicativo, rasterizada por `scripts/build-email-assets.py` para não depender de fontes externas nos clientes de e-mail.
+As imagens oficiais são publicadas em `https://eleva-the-club.vercel.app/email/`. A composição usa tabelas, estilos inline, cores de fundo sólidas, fontes de sistema, imagens com texto alternativo e CTA em HTML, para continuar legível quando o cliente bloqueia imagens. A assinatura “the club” preserva a fonte Allura do aplicativo, rasterizada por `scripts/build-email-assets.py` para não depender de fontes externas nos clientes de e-mail.
 
 `public/email/confirmation-preview.html` é uma prévia visual, sem tokens e com os botões de confirmação desativados. Não usar essa prévia como modelo no Supabase.
 

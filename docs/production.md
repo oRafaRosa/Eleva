@@ -14,8 +14,8 @@ Administradoras podem buscar todas as contas por nome/e-mail, consultar o plano 
 
 O conector atual cria banco, mas não oferece configuração de Auth/SMTP. O painel pediu login e apresentou CAPTCHA depois da entrada pelo formulário seguro. Sem concluir esta etapa, não considerar cadastro, confirmação e recuperação validados para lançamento público.
 
-- Site URL: `https://orafarosa.github.io/Eleva/`.
-- Redirect URLs: `https://orafarosa.github.io/Eleva/auth/` e `https://orafarosa.github.io/Eleva/reset-password/`.
+- Site URL: `https://eleva-the-club.vercel.app/`.
+- Redirect URLs: `https://eleva-the-club.vercel.app/auth/` e `https://eleva-the-club.vercel.app/reset-password/`.
 - Manter confirmação de e-mail habilitada. Configurar provedor SMTP próprio para envio a novas usuárias; o remetente padrão tem restrições.
 - Verificar nos modelos de confirmação e recuperação se o link respeita o `redirect_to` enviado pelo aplicativo.
 - Configurar senha mínima de 10 caracteres no Auth, em acordo com o formulário.
@@ -36,7 +36,7 @@ Não promover automaticamente a primeira pessoa cadastrada, domínio inteiro ou 
 
 A contratação é manual por WhatsApp. Até a equipe informar o número comercial, `salesWhatsapp` usa o link do grupo VIP já existente na página oficial. Substituir por uma URL `https://wa.me/55...` via código ou `EXPO_PUBLIC_SALES_WHATSAPP_URL` após receber o número. O app não cobra, não simula pagamento e não libera PRO ao clicar no botão.
 
-O domínio `elevatheclub.com.br` não teve DNS alterado. Ao migrar, configurar domínio na hospedagem, `EXPO_PUBLIC_SITE_URL`, redirecionamentos do Auth e publicar novamente. SMTP próprio pode exigir registros DNS separados do domínio do app.
+O app foi publicado em `https://eleva-the-club.vercel.app/` pela Vercel. O domínio `elevatheclub.com.br` foi associado à Vercel, mas ainda não teve DNS alterado porque a autenticação de dois fatores do Registro.br não foi concluída. Ao migrar, configurar domínio na hospedagem, `EXPO_PUBLIC_SITE_URL`, redirecionamentos do Auth e publicar novamente. SMTP próprio pode exigir registros DNS separados do domínio do app.
 
 ## Verificação realizada
 

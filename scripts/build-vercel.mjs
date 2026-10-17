@@ -1,9 +1,9 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 
-const host = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+// Keep auth links on the verified origin until the custom domain's DNS is ready.
 const configured =
-  process.env.EXPO_PUBLIC_SITE_URL || (host ? `https://${host}` : "");
+  process.env.EXPO_PUBLIC_SITE_URL || "https://eleva-the-club.vercel.app";
 if (!configured)
   throw new Error(
     "Configure EXPO_PUBLIC_SITE_URL ou habilite as variáveis de sistema da Vercel.",
@@ -53,10 +53,9 @@ for (const [source, target] of [
 ]) {
   writeFileSync(
     target,
-    readFileSync(source, "utf8").replaceAll(
-      "https://orafarosa.github.io/Eleva",
-      siteUrl,
-    ),
+    readFileSync(source, "utf8")
+      .replaceAll("https://orafarosa.github.io/Eleva", siteUrl)
+      .replaceAll("https://eleva-the-club.vercel.app", siteUrl),
   );
 }
 mkdirSync("dist/convite", { recursive: true });

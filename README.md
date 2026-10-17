@@ -27,6 +27,6 @@ Testes SQL usam bancos PGlite descartáveis, sem conectar à produção. O build
 
 ## Referências
 
-[App publicado](https://orafarosa.github.io/Eleva/). [Figma](https://www.figma.com/design/MCzuXlmEabOjmapLqIRq3c).
+[App publicado](https://eleva-the-club.vercel.app/). [Figma](https://www.figma.com/design/MCzuXlmEabOjmapLqIRq3c).
 
 DESIGN.md contém identidade e interação; PRODUCT.md, escopo; docs/production.md, operação. Supabase: [supabase/README.md](supabase/README.md). Builds nativos e testes reais em Safari/iPhone e Android ainda pendentes. O domínio próprio será configurado após o desenvolvimento.
