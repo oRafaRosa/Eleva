@@ -137,6 +137,7 @@ export function Page({
   backHref = "/(tabs)/home",
   showBrand = true,
   layout = "content",
+  animateHeading = false,
 }: {
   children: React.ReactNode;
   title?: string;
@@ -148,8 +149,10 @@ export function Page({
   backHref?: Href;
   showBrand?: boolean;
   layout?: "content" | "form" | "reading";
+  animateHeading?: boolean;
 }) {
   const insets = useSafeAreaInsets();
+  const HeadingContainer = animateHeading ? MotionBlock : View;
   return (
     <KeyboardAvoidingView
       style={s.page}
@@ -208,7 +211,7 @@ export function Page({
           </Body>
         )}
         {(title || actions) && (
-          <View
+          <HeadingContainer
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -230,7 +233,7 @@ export function Page({
               </Title>
             )}
             {actions}
-          </View>
+          </HeadingContainer>
         )}
         {children}
         <View style={{ height: 36 }} />
@@ -640,7 +643,7 @@ export const s = StyleSheet.create({
     minHeight: 48,
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: colors.line,
+    borderColor: colors.controlLine,
     paddingVertical: 9,
     paddingHorizontal: 15,
     borderRadius: 3,

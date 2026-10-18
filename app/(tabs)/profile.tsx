@@ -6,7 +6,7 @@ import {
   Body,
   Title,
   Section,
-  PublicationCard,
+  Chip,
   Empty,
   Button,
   ErrorState,
@@ -14,15 +14,29 @@ import {
 import { useEleva } from "../../src/state/AppProvider";
 import { colors } from "../../src/theme";
 import { ProfileAvatar } from "../../src/components/ProfileAvatar";
+import { CompactPublicationRow } from "../../src/components/CompactPublicationRow";
+import { availableCompletions } from "../../src/utils/memberExperience";
+import { MotionBlock } from "../../src/components/MotionBlock";
 export default function Profile() {
-  const { user, favorites, publications, logout, actionBusy, error, refresh } =
-    useEleva();
+  const {
+    user,
+    favorites,
+    completions,
+    publications,
+    logout,
+    actionBusy,
+    error,
+    refresh,
+  } = useEleva();
   const [accountOpen, setAccountOpen] = useState(false);
+  const [libraryTab, setLibraryTab] = useState<"saved" | "completed">("saved");
   const [leaving, setLeaving] = useState(false);
   const [accountError, setAccountError] = useState("");
   const saved = publications.filter((publication) =>
     favorites.includes(publication.id),
   );
+  const completed = availableCompletions(publications, completions);
+  const shown = libraryTab === "saved" ? saved : completed;
   async function exit() {
     if (leaving) return;
     setLeaving(true);
@@ -37,8 +51,8 @@ export default function Profile() {
     }
   }
   return (
-    <Page title="Meu ELEVA">
-      <View
+    <Page title="Meu ELEVA" animateHeading>
+      <MotionBlock
         style={{
           flexDirection: "row",
           alignItems: "center",
@@ -57,7 +71,7 @@ export default function Profile() {
           <Title small>{user?.full_name}</Title>
           {!!user?.city && <Body muted>{user.city}</Body>}
         </View>
-      </View>
+      </MotionBlock>
       <Button
         secondary
         label="Editar perfil"
@@ -112,14 +126,32 @@ export default function Profile() {
         )}
         {!!accountError && <ErrorState text={accountError} onRetry={exit} />}
       </View>
-      <Section title="Salvos para depois" />
+      <Section title="Sua biblioteca" />
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        <Chip
+          label={`Salvos (${saved.length})`}
+          active={libraryTab === "saved"}
+          onPress={() => setLibraryTab("saved")}
+        />
+        <Chip
+          label={`Concluídos (${completed.length})`}
+          active={libraryTab === "completed"}
+          onPress={() => setLibraryTab("completed")}
+        />
+      </View>
       {!!error && <ErrorState text={error} onRetry={refresh} />}
-      {saved.length ? (
-        saved.map((publication) => (
-          <PublicationCard key={publication.id} item={publication} />
+      {shown.length ? (
+        shown.map((publication) => (
+          <CompactPublicationRow key={publication.id} item={publication} />
         ))
       ) : !error ? (
-        <Empty text="Use “Salvar” em um conteúdo para encontrá-lo aqui." />
+        <Empty
+          text={
+            libraryTab === "saved"
+              ? "Use “Salvar” em um conteúdo para encontrá-lo aqui."
+              : "Os conteúdos que você marcar como concluídos aparecem aqui."
+          }
+        />
       ) : null}
     </Page>
   );
