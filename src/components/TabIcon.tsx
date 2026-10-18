@@ -1,7 +1,16 @@
 import Svg, { Path, Circle } from "react-native-svg";
-import { View, type ColorValue } from "react-native";
+import { View, Image, type ColorValue } from "react-native";
+import { colors } from "../theme";
 
-export function TabIcon({ name, color }: { name: string; color: ColorValue }) {
+export function TabIcon({
+  name,
+  color,
+  selected = false,
+}: {
+  name: string;
+  color: ColorValue;
+  selected?: boolean;
+}) {
   return (
     <View
       pointerEvents="none"
@@ -12,6 +21,22 @@ export function TabIcon({ name, color }: { name: string; color: ColorValue }) {
         justifyContent: "center",
       }}
     >
+      {selected && (
+        <Image
+          source={require("../../assets/brand/seal.png")}
+          accessible={false}
+          resizeMode="contain"
+          style={{
+            position: "absolute",
+            width: 58,
+            height: 58,
+            left: -17,
+            top: -6,
+            tintColor: colors.pink,
+            opacity: 0.85,
+          }}
+        />
+      )}
       <View style={{ position: "relative", zIndex: 1 }}>
         <Svg
           accessible={false}

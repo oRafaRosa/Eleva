@@ -16,25 +16,9 @@ import { colors, fonts } from "../../src/theme";
 import { Illustration } from "../../src/components/Illustration";
 import { MotionBlock } from "../../src/components/MotionBlock";
 import { dailyDevotional } from "../../src/utils/editorialDay";
-import { continuablePublications } from "../../src/utils/memberExperience";
-import { CompactPublicationRow } from "../../src/components/CompactPublicationRow";
 export default function Home() {
-  const {
-    publications,
-    events,
-    favorites,
-    completions,
-    user,
-    loading,
-    error,
-    refresh,
-  } = useEleva();
+  const { publications, events, user, loading, error, refresh } = useEleva();
   const devotional = dailyDevotional(publications);
-  const toResume = continuablePublications(
-    publications.filter((item) => item.id !== devotional?.id),
-    favorites,
-    completions,
-  );
   return (
     <Page
       titleStyle={{ fontFamily: fonts.bold, fontSize: 34, lineHeight: 40 }}
@@ -55,14 +39,6 @@ export default function Home() {
       ) : !error ? (
         <Empty text="O devocional de hoje ainda não foi publicado. Os anteriores estão em Aprender." />
       ) : null}
-      {!!toResume.length && (
-        <View>
-          <Section title="Retomar seus salvos" />
-          {toResume.map((item) => (
-            <CompactPublicationRow key={item.id} item={item} />
-          ))}
-        </View>
-      )}
       <Section
         title="Para a sua semana"
         action="Ver todos"

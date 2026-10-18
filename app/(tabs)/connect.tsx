@@ -55,7 +55,6 @@ function ConnectFeed() {
   return (
     <Page
       title="Conectar"
-      animateHeading
       actions={
         user && (
           <Pressable
@@ -120,62 +119,59 @@ function ConnectFeed() {
       {loading && !topics.length ? (
         <Loading />
       ) : topics.length ? (
-        topics.map((t, index) => {
-          const TopicContainer = index === 0 ? MotionBlock : View;
-          return (
-            <TopicContainer key={t.id} style={[s.article, { marginBottom: 8 }]}>
-              {user && (
-                <ForumMessageOptions
-                  item={t}
-                  kind="topic"
-                  user={user}
-                  demo={isDemo}
-                  busy={busy}
-                  action={action}
+        topics.map((t) => (
+          <View key={t.id} style={[s.article, { marginBottom: 8 }]}>
+            {user && (
+              <ForumMessageOptions
+                item={t}
+                kind="topic"
+                user={user}
+                demo={isDemo}
+                busy={busy}
+                action={action}
+              />
+            )}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`Abrir ${t.title}`}
+              onPress={() => openTopic(t.id)}
+              style={{ minHeight: 48 }}
+            >
+              <Title small style={{ marginVertical: 10 }}>
+                {t.title}
+              </Title>
+            </Pressable>
+            <Body numberOfLines={3}>
+              {t.deleted ? "As respostas continuam disponíveis." : t.body}
+            </Body>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 12,
+                marginTop: 8,
+              }}
+            >
+              {!t.deleted && (
+                <SocialAction
+                  kind="heart"
+                  count={t.like_count ?? 0}
+                  active={t.liked_by_me}
+                  disabled={busy}
+                  onPress={() =>
+                    void action((r) => r.setLike(t.id, !t.liked_by_me))
+                  }
                 />
               )}
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={`Abrir ${t.title}`}
+              <SocialAction
+                kind="comment"
+                count={t.comment_count ?? 0}
+                disabled={busy}
                 onPress={() => openTopic(t.id)}
-                style={{ minHeight: 48 }}
-              >
-                <Title small style={{ marginVertical: 10 }}>
-                  {t.title}
-                </Title>
-              </Pressable>
-              <Body numberOfLines={3}>
-                {t.deleted ? "As respostas continuam disponíveis." : t.body}
-              </Body>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 12,
-                  marginTop: 8,
-                }}
-              >
-                {!t.deleted && (
-                  <SocialAction
-                    kind="heart"
-                    count={t.like_count ?? 0}
-                    active={t.liked_by_me}
-                    disabled={busy}
-                    onPress={() =>
-                      void action((r) => r.setLike(t.id, !t.liked_by_me))
-                    }
-                  />
-                )}
-                <SocialAction
-                  kind="comment"
-                  count={t.comment_count ?? 0}
-                  disabled={busy}
-                  onPress={() => openTopic(t.id)}
-                />
-              </View>
-            </TopicContainer>
-          );
-        })
+              />
+            </View>
+          </View>
+        ))
       ) : (
         !loadError && (
           <Empty text="Ainda não há publicações. Compartilhe a primeira." />

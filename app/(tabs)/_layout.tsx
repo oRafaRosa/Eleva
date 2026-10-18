@@ -5,7 +5,6 @@ import { TabIcon } from "../../src/components/TabIcon";
 import { useEleva } from "../../src/state/AppProvider";
 import { Loading, Page, ErrorState } from "../../src/components/ui";
 import { colors, fonts } from "../../src/theme";
-import { MovingTabBar } from "../../src/components/MovingTabBar";
 export default function TabsLayout() {
   const { user, sessionReady, loading, error, refresh, authStatus } =
     useEleva();
@@ -22,14 +21,13 @@ export default function TabsLayout() {
   return (
     <Tabs
       initialRouteName="home"
-      tabBar={(props) => <MovingTabBar {...props} />}
       screenOptions={{
         animation: "none",
         headerShown: false,
         tabBarActiveTintColor: colors.burgundy,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: {
-          backgroundColor: "transparent",
+          backgroundColor: colors.ivory,
           borderTopColor: colors.line,
           height:
             Math.max(width < 360 ? 84 : 72, Math.ceil(76 * fontScale)) +
@@ -72,7 +70,9 @@ export default function TabsLayout() {
                 {title}
               </Text>
             ),
-            tabBarIcon: ({ color }) => <TabIcon name={name} color={color} />,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon name={name} color={color} selected={focused} />
+            ),
           }}
         />
       ))}

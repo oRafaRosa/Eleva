@@ -19,15 +19,11 @@ import {
   ChallengeProgress,
   ChallengeStepControl,
 } from "../../src/components/ChallengeProgress";
-import { splitUpcomingEvents } from "../../src/utils/memberExperience";
-import type { ElevaEvent } from "../../src/types/domain";
-import { MotionBlock } from "../../src/components/MotionBlock";
 export default function Live() {
   const [linkError, setLinkError] = useState("");
   const [expanded, setExpanded] = useState<string[]>([]);
   const {
     events,
-    registrations,
     challenges,
     challengeSteps,
     stepCompletions,
@@ -36,15 +32,12 @@ export default function Live() {
     refresh,
     loading,
   } = useEleva();
-  const agenda = splitUpcomingEvents(events, registrations, new Date());
   return (
-    <Page kicker="Atividades e encontros" title="Viver" animateHeading>
+    <Page kicker="Atividades e encontros" title="Viver">
       {!!linkError && <Empty text={linkError} />}
       {!!error && <ErrorState text={error} onRetry={refresh} />}
       {loading && !challenges.length && !events.length && <Loading />}
-      <MotionBlock>
-        <Section title="Desafios" />
-      </MotionBlock>
+      <Section title="Desafios" />
       {!loading && !error && !challenges.length && (
         <Empty text="Os próximos desafios vão aparecer aqui." />
       )}
@@ -56,10 +49,7 @@ export default function Live() {
           stepCompletions.includes(step.id),
         ).length;
         return (
-          <View
-            key={c.id}
-            style={[s.panel, { marginBottom: 12, gap: 8, padding: 16 }]}
-          >
+          <View key={c.id} style={[s.panel, { marginBottom: 16, gap: 8 }]}>
             <Title small>{c.title}</Title>
             <Body muted style={{ fontSize: 14 }}>
               {new Date(`${c.starts_on}T12:00:00Z`).toLocaleDateString(
@@ -129,66 +119,29 @@ export default function Live() {
           </View>
         );
       })}
-      {!!agenda.registered.length && (
-        <View>
-          <Section title="Sua agenda" />
-          {agenda.registered.map((event) => (
-            <EventRow key={event.id} event={event} confirmed />
-          ))}
-        </View>
+      <Section title="Próximos encontros" />
+      {!loading && !error && !events.length && (
+        <Empty text="Ainda não há encontros publicados." />
       )}
-      {(!!agenda.others.length || !agenda.registered.length) && (
-        <Section title="Próximos encontros" />
-      )}
-      {!loading &&
-        !error &&
-        !agenda.others.length &&
-        !agenda.registered.length && (
-          <Empty text="Ainda não há próximos encontros publicados." />
-        )}
-      {agenda.others.map((event) => (
-        <EventRow key={event.id} event={event} />
+      {events.map((e) => (
+        <Pressable
+          key={e.id}
+          accessibilityRole="button"
+          onPress={() => router.push(`/event/${e.id}`)}
+          style={[s.article, { gap: 8 }]}
+        >
+          <Body muted>
+            {new Date(e.starts_at).toLocaleDateString("pt-BR", {
+              day: "numeric",
+              month: "long",
+              timeZone: "America/Sao_Paulo",
+            })}
+          </Body>
+          <Title small>{e.title}</Title>
+          <Body>{e.location}</Body>
+          <Body style={{ color: colors.burgundy }}>Ver detalhes ↗</Body>
+        </Pressable>
       ))}
     </Page>
-  );
-}
-
-function EventRow({
-  event,
-  confirmed = false,
-}: {
-  event: ElevaEvent;
-  confirmed?: boolean;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`Abrir encontro ${event.title}${confirmed ? ", inscrição confirmada" : ""}`}
-      onPress={() => router.push(`/event/${event.id}`)}
-      style={({ pressed }) => [
-        s.article,
-        {
-          minHeight: 58,
-          paddingVertical: 10,
-          gap: 2,
-          backgroundColor: pressed ? colors.pink : "transparent",
-        },
-      ]}
-    >
-      <Body muted style={{ fontSize: 13, lineHeight: 18 }}>
-        {new Date(event.starts_at).toLocaleDateString("pt-BR", {
-          day: "numeric",
-          month: "long",
-          timeZone: "America/Sao_Paulo",
-        })}
-        {confirmed ? " · Inscrição confirmada" : ""}
-      </Body>
-      <Title small style={{ fontSize: 22, lineHeight: 26 }}>
-        {event.title}
-      </Title>
-      <Body muted style={{ fontSize: 14, lineHeight: 20 }}>
-        {event.location}
-      </Body>
-    </Pressable>
   );
 }

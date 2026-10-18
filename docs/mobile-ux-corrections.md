@@ -23,13 +23,3 @@ TypeScript, testes de comportamento, SQL em banco descartável e build web. Não
 ## Limites
 
 Sem teste visual em navegador ou aparelho real nesta execução. Safari/Chrome móveis, teclado aberto, VoiceOver/TalkBack, back nativo, seletores de data, fotos com enquadramentos diferentes e insets inferiores continuam exigindo validação real. Os riscos visuais não foram apresentados como defeitos reproduzidos em todos os dispositivos. Recorte manual de foto, temas adicionais e virtualização de listas extensas não foram adicionados sem essa evidência.
-
-## Evolução da área logada — 17/10/2026
-
-- Início mostra até dois conteúdos salvos e não concluídos em linhas compactas, sem repetir o devocional do dia. “Retomar” não afirma que o app conhece a posição de leitura.
-- Aprender combina busca, pilar e formato; os formatos ficam em uma faixa horizontal dentro dos filtros recolhidos, sem acrescentar várias linhas permanentes ao celular.
-- Viver separa encontros futuros confirmados em `Sua agenda` e não os repete em `Próximos encontros`. Desafios mantêm a primeira posição e usam padding menor.
-- Meu ELEVA alterna Salvos e Concluídos em uma biblioteca de linhas compactas. Itens removidos não geram links na lista.
-- O carimbo único da navegação se move atrás dos ícones; rótulos e áreas de toque permanecem. Chips de filtro usam borda mais nítida.
-
-Os novos seletores e a geometria do carimbo têm testes focados. A exportação web passou. A prévia local não abriu no navegador do ambiente por bloqueio de verificação administrativa, então largura de 320 px, fonte ampliada, alinhamento visual do carimbo e sensação em toque rápido ainda precisam de revisão visual em navegador e aparelho. A configuração de produção foi restaurada depois da geração da prévia de demonstração.
