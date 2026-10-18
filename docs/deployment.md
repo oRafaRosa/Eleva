@@ -19,7 +19,7 @@ A URL e a chave publicável Supabase têm valores padrão em `src/services/produ
 ## Depois da publicação
 
 1. Verificar status READY, commit correto, página pública, foto completa, login, cadastro, convite e rota interna atualizada diretamente.
-2. Conferir `/site.webmanifest`, `/icons/eleva-seal-180-v2.png` e `/email/confirmation-preview.html`, com imagens carregadas.
+2. Conferir `/site.webmanifest`, `/icons/eleva-seal-180-v3.png` e `/email/confirmation-preview.html`, com imagens carregadas. No iPhone, atalhos existentes precisam ser removidos e adicionados novamente para atualizar o ícone da tela inicial.
 3. Configurar a Site URL e os redirects `/auth/` e `/reset-password/` no Supabase para a origem definitiva. Ainda dependem de acesso ao painel; SMTP próprio e primeiros e-mails admin continuam pendentes.
 4. Atualizar o modelo no Supabase com o endereço novo. Não desativar a hospedagem antiga enquanto algum modelo ativo depender das imagens de lá.
 5. Após a verificação, remover o disparo automático de `.github/workflows/pages.yml` e desativar o Pages nas configurações do repositório, conforme autorizado por Rafa. O repositório continua sendo a fonte de código.

@@ -21,7 +21,7 @@ if (!html.includes(`${basePath}/_expo/`)) {
     "O build não contém os caminhos esperados para GitHub Pages.",
   );
 }
-if (!html.includes(`href="${basePath}/icons/eleva-seal-180-v2.png"`)) {
+if (!html.includes(`href="${basePath}/icons/eleva-seal-180-v3.png"`)) {
   throw new Error("O ícone de Tela de Início não está configurado no HTML.");
 }
 const touchIcon = readFileSync("dist/apple-touch-icon.png");

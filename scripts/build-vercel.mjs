@@ -38,7 +38,7 @@ if (result.status !== 0) process.exit(result.status ?? 1);
 const html = readFileSync("dist/index.html", "utf8");
 if (html.includes("/Eleva/_expo/"))
   throw new Error("O build Vercel não deve usar a subpasta do Pages.");
-if (!html.includes('href="/icons/eleva-seal-180-v2.png"'))
+if (!html.includes('href="/icons/eleva-seal-180-v3.png"'))
   throw new Error("Ícone de Tela de Início ausente.");
 mkdirSync("dist/email", { recursive: true });
 for (const [source, target] of [
