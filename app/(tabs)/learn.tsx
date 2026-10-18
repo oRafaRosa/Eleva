@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Pressable } from "react-native";
+import { View, Pressable, ScrollView } from "react-native";
 import {
   Page,
   Body,
@@ -13,20 +13,18 @@ import {
 } from "../../src/components/ui";
 import { useEleva } from "../../src/state/AppProvider";
 import { MotionBlock } from "../../src/components/MotionBlock";
-import { colors, fonts } from "../../src/theme";
+import { colors, fonts, typeLabels } from "../../src/theme";
+import type { Pillar, PublicationType } from "../../src/types/domain";
+import { filterPublications } from "../../src/utils/memberExperience";
 export default function Learn() {
   const { publications, loading, error, refresh } = useEleva();
   const [q, setQ] = useState("");
-  const [pillar, setPillar] = useState("all");
+  const [pillar, setPillar] = useState<Pillar | "all">("all");
+  const [format, setFormat] = useState<PublicationType | "all">("all");
   const [searchOpen, setSearchOpen] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const visible = publications.filter(
-    (p) =>
-      (pillar === "all" || p.pillar === pillar) &&
-      (p.title + " " + p.summary)
-        .toLocaleLowerCase("pt-BR")
-        .includes(q.toLocaleLowerCase("pt-BR")),
-  );
+  const visible = filterPublications(publications, q, pillar, format);
+  const formats = Array.from(new Set(publications.map((item) => item.type)));
   return (
     <Page
       title="Aprender"
@@ -41,7 +39,7 @@ export default function Learn() {
           <Toggle
             label="Filtros"
             open={filtersOpen}
-            active={pillar !== "all"}
+            active={pillar !== "all" || format !== "all"}
             onPress={() => setFiltersOpen((v) => !v)}
           />
         </View>
@@ -61,8 +59,11 @@ export default function Learn() {
         </MotionBlock>
       )}
       {filtersOpen && (
-        <MotionBlock>
-          <View style={[s.row, { marginBottom: 12 }]}>
+        <MotionBlock style={{ marginBottom: 12 }}>
+          <Body muted style={{ fontSize: 14, marginBottom: 6 }}>
+            Pilar
+          </Body>
+          <View style={[s.row, { marginBottom: 10 }]}>
             {[
               ["all", "Todos"],
               ["body", "Corpo"],
@@ -73,13 +74,35 @@ export default function Learn() {
                 key={id}
                 label={label}
                 active={pillar === id}
-                onPress={() => setPillar(id)}
+                onPress={() => setPillar(id as Pillar | "all")}
               />
             ))}
           </View>
+          <Body muted style={{ fontSize: 14, marginBottom: 6 }}>
+            Formato
+          </Body>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8, paddingRight: 20 }}
+          >
+            <Chip
+              label="Todos"
+              active={format === "all"}
+              onPress={() => setFormat("all")}
+            />
+            {formats.map((type) => (
+              <Chip
+                key={type}
+                label={typeLabels[type]}
+                active={format === type}
+                onPress={() => setFormat(type)}
+              />
+            ))}
+          </ScrollView>
         </MotionBlock>
       )}
-      {(q || pillar !== "all") && (
+      {(q || pillar !== "all" || format !== "all") && (
         <View
           style={[
             s.row,
@@ -96,6 +119,7 @@ export default function Learn() {
             {pillar !== "all"
               ? ` em ${({ body: "Corpo", mind: "Mente", spirit: "Espírito" } as Record<string, string>)[pillar]}`
               : ""}
+            {format !== "all" ? ` · ${typeLabels[format]}` : ""}
           </Body>
           <Toggle
             label="Limpar"
@@ -103,6 +127,7 @@ export default function Learn() {
             onPress={() => {
               setQ("");
               setPillar("all");
+              setFormat("all");
             }}
           />
         </View>
@@ -110,7 +135,7 @@ export default function Learn() {
       {loading ? (
         <Loading />
       ) : visible.length ? (
-        <MotionBlock key={pillar}>
+        <MotionBlock key={`${pillar}:${format}`}>
           {visible.map((p) => (
             <PublicationCard key={p.id} item={p} />
           ))}
