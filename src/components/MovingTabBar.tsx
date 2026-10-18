@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Image, View } from "react-native";
+import { View } from "react-native";
 import { BottomTabBar, type BottomTabBarProps } from "expo-router/tabs";
 import Animated, {
   cancelAnimation,
@@ -14,7 +14,7 @@ import { colors } from "../theme";
 import { sealCenter, sealDuration } from "../utils/tabSeal";
 
 const stampSize = 58;
-const stamp = Image.resolveAssetSource(require("../../assets/brand/seal.png"));
+const stamp = require("../../assets/brand/seal.png");
 
 export function MovingTabBar(props: BottomTabBarProps) {
   const [width, setWidth] = useState(0);
